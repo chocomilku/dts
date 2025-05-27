@@ -1,0 +1,65 @@
+/* Material Icons by Google */
+@font-face {
+    font-family: 'Material Symbols Outlined';
+    font-style: normal;
+    src: url(../fonts/MaterialSymbolsOutlined-Regular.ttf);
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+/* Color palette provided by Bootstrap; only picked colors that are used */
+:root {
+    --bs-orange-100: #ffe5d0;
+    --bs-orange-500: #fd7e14;
+}
+
+/* layout specfic */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    background-color: var(--bs-gray-200);
+}
+
+.page > nav {
+    max-width: 280px;
+    width: 100%;
+    background-color: var(--bs-gray-900);
+    color: var(--bs-gray-600);
+}
+
+.page > .content {
+    width: 100%;
+}
+
+.content main {
+    padding: 2rem;
+}
+
+.page .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--bs-orange-100);
+    box-shadow: 0 3px 3px 0 var(--bs-gray-300);
+}
+
+.topbar > h5 {
+    font-weight: bold;
+    color: var(--bs-orange-500);
+}
