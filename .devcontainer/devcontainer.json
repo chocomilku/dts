@@ -12,7 +12,10 @@
     "vscode": {
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
-        "oven.bun-vscode"
+        "oven.bun-vscode",
+        "postman.postman-for-vscode",
+        "esbenp.prettier-vscode",
+        "qwtel.sqlite-viewer"
       ]
     }
   },

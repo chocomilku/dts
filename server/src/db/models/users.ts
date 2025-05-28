@@ -17,8 +17,7 @@ export const users = sqliteTable("users", {
 export const zUsers = z.object({
 	role: z.enum(["superadmin", "admin", "clerk", "officer"]),
 	name: z.string(),
-	departmentId: z.number(),
-	username: z.string(),
+	departmentId: z.coerce.number(),
 	password: z.string(),
-	birthdate: z.date(),
+	birthdate: z.coerce.date(),
 });
