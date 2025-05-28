@@ -15,6 +15,13 @@
       "when": 1748407302423,
       "tag": "0001_add_user_department_models",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1748416781200,
+      "tag": "0002_unique_fields",
+      "breakpoints": true
     }
   ]
 }
