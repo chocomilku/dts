@@ -7,10 +7,10 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { SQLiteError } from "bun:sqlite";
 
-const departments = new Hono();
+const departmentRouter = new Hono();
 
 //#region departments - POST
-departments.post("/", zValidator("form", zDepartments), async (c) => {
+departmentRouter.post("/", zValidator("form", zDepartments), async (c) => {
 	const validated = c.req.valid("form");
 
 	try {
@@ -43,4 +43,4 @@ departments.post("/", zValidator("form", zDepartments), async (c) => {
 });
 //#endregion
 
-export default departments;
+export default departmentRouter;

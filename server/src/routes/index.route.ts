@@ -1,15 +1,10 @@
 import { Hono } from "hono";
-import users from "./users.route";
-import departments from "./departments.route";
 
-const routes = new Hono();
+const indexRouter = new Hono();
 
-routes.route("/users", users);
-routes.route("/departments", departments);
-
-routes.get("/", (c) => {
+indexRouter.get("/", (c) => {
 	c.status(200);
 	return c.json({ message: "OK!" });
 });
 
-export default routes;
+export default indexRouter;

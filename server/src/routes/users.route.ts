@@ -8,10 +8,10 @@ import { z } from "zod";
 import { eq, getTableColumns } from "drizzle-orm";
 import { departments as departmentsModel } from "@db/models/departments";
 
-const users = new Hono();
+const userRouter = new Hono();
 
 //#region users - GET ALL
-users.get("/", async (c) => {
+userRouter.get("/", async (c) => {
 	try {
 		const { limit, offset, department } = c.req.query();
 		const querySchema = z.object({
@@ -62,7 +62,7 @@ users.get("/", async (c) => {
 //#endregion
 
 //#region users - POST
-users.post("/", zValidator("form", zUsers), async (c) => {
+userRouter.post("/", zValidator("form", zUsers), async (c) => {
 	const validated = c.req.valid("form");
 
 	const passwordHash = await Bun.password.hash(validated.password);
@@ -95,4 +95,4 @@ users.post("/", zValidator("form", zUsers), async (c) => {
 });
 //#endregion
 
-export default users;
+export default userRouter;

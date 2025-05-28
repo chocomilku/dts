@@ -3,7 +3,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { logger } from "hono/logger";
 import { poweredBy } from "hono/powered-by";
 
-import routes from "@routes/index.route";
+import routes from "@routes/index";
 
 const app = new Hono();
 
