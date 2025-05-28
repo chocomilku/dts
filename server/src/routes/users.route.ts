@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { usersController } from "@/controllers/users/users.controller";
+import userController from "@controllers/users";
 
 const users = new Hono();
 
-users.get("/", usersController);
+users.get("/", userController.getUsersController);
 
 export default users;
