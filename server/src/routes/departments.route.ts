@@ -9,6 +9,7 @@ import { SQLiteError } from "bun:sqlite";
 
 const departments = new Hono();
 
+//#region departments - POST
 departments.post("/", zValidator("form", zDepartments), async (c) => {
 	const validated = c.req.valid("form");
 
@@ -33,11 +34,13 @@ departments.post("/", zValidator("form", zDepartments), async (c) => {
 		}
 
 		// SQLITE_CONSTRAINT_UNIQUE
+		// best to use switch case here if it gottten big
 		if (e.errno == 2067) {
 			c.status(409);
 			return c.json({ message: "Department name already exists." });
 		}
 	}
 });
+//#endregion
 
 export default departments;
