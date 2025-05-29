@@ -15,7 +15,8 @@
         "oven.bun-vscode",
         "postman.postman-for-vscode",
         "esbenp.prettier-vscode",
-        "qwtel.sqlite-viewer"
+        "qwtel.sqlite-viewer",
+        "redis.redis-for-vscode"
       ]
     }
   },

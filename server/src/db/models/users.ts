@@ -21,3 +21,8 @@ export const zUsers = z.object({
 	password: z.string(),
 	birthdate: z.coerce.date(),
 });
+
+export const zLogin = z.object({
+	username: z.string(),
+	password: z.string(),
+});
