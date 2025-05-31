@@ -9,27 +9,32 @@ import { eq, getTableColumns } from "drizzle-orm";
 import { departments as departmentsModel } from "@db/models/departments";
 import { sessionAuth } from "@middlewares/sessionAuth";
 
-const userRouter = new Hono();
+type Variables = {
+	userId: number; // from sessionAuth
+};
+
+const userRouter = new Hono<{ Variables: Variables }>();
 
 //#region users - GET ALL
 userRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
 		const { limit, offset, department } = c.req.query();
 		const querySchema = z.object({
-			limit: z.coerce.number().int().positive().max(50).default(10),
-			offset: z.coerce.number().int().nonnegative().default(0),
-			departmentId: z.coerce.number().optional(),
+			limit: z.coerce.number().int().positive().max(50).default(10).catch(10),
+			offset: z.coerce.number().int().nonnegative().default(0).catch(0),
+			departmentId: z.coerce.number().optional().catch(undefined),
 		});
 
-		const {
-			limit: safeLimit,
-			offset: safeOffset,
-			departmentId: safeDepartmentId,
-		} = querySchema.parse({
+		const parsedData = querySchema.safeParse({
 			limit,
 			offset,
 			department,
 		});
+
+		if (!parsedData.success) {
+			c.status(400);
+			return c.json(parsedData.error);
+		}
 
 		const { password, username, birthdate, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
@@ -42,11 +47,11 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 				departmentsModel,
 				eq(usersModel.departmentId, departmentsModel.id)
 			)
-			.limit(safeLimit)
-			.offset(safeOffset)
+			.limit(parsedData.data.limit)
+			.offset(parsedData.data.offset)
 			.where(
-				safeDepartmentId
-					? eq(usersModel.departmentId, safeDepartmentId)
+				parsedData.data.departmentId
+					? eq(usersModel.departmentId, parsedData.data.departmentId)
 					: undefined
 			);
 
@@ -54,6 +59,88 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 
 		c.status(200);
 		return c.json({ message: "OK", count, data });
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+//#endregion
+
+//#region user @me - GET
+userRouter.get("/@me", sessionAuth("any"), async (c) => {
+	try {
+		const userId = c.get("userId");
+
+		const { password, username, birthdate, departmentId, ...usersRest } =
+			getTableColumns(usersModel);
+		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
+
+		const data = await db
+			.select({ ...usersRest, department: deptRest })
+			.from(usersModel)
+			.leftJoin(
+				departmentsModel,
+				eq(usersModel.departmentId, departmentsModel.id)
+			)
+			.limit(1)
+			.where(eq(usersModel.id, userId));
+
+		if (data.length != 1) {
+			c.status(404);
+			return c.json({ message: "User not found." });
+		}
+
+		c.status(200);
+		return c.json({ message: "OK", data });
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+//#endregion
+
+//#region user:id - GET
+userRouter.get("/:id", sessionAuth("any"), async (c) => {
+	try {
+		const { id } = c.req.param();
+		const querySchema = z.object({
+			id: z.coerce.number().int().positive(),
+		});
+
+		const parsedData = querySchema.safeParse({
+			id,
+		});
+
+		if (!parsedData.success) {
+			c.status(400);
+			return c.json(parsedData.error);
+		}
+
+		const safeId = parsedData.data.id;
+
+		const { password, username, birthdate, departmentId, ...usersRest } =
+			getTableColumns(usersModel);
+		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
+
+		const data = await db
+			.select({ ...usersRest, department: deptRest })
+			.from(usersModel)
+			.leftJoin(
+				departmentsModel,
+				eq(usersModel.departmentId, departmentsModel.id)
+			)
+			.limit(1)
+			.where(eq(usersModel.id, safeId));
+
+		if (data.length != 1) {
+			c.status(404);
+			return c.json({ message: "User not found." });
+		}
+
+		c.status(200);
+		return c.json({ message: "OK", data });
 	} catch (e) {
 		console.error(e);
 		c.status(500);
