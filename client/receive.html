@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receive Documents | Document Tracking System</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script defer src="js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+    <div class="page">
+        <nav class="sidebar">
+            <img src="./static/Logo Banner.png" alt="banner" class="sidebar__banner">
+            <hr>
+            <div class="profile">
+                <img src="./static/Avatar.png" alt="avatar">
+                <div class="profile__info">
+                    <h6 class="fw-bold">Juan Dela Cruz</h6>
+                    <p class="fw-light">IT Dept.</p>
+                </div>
+                <div class="profile__dropdown">▼</div>
+            </div>
+            <div class="navigation">
+                <hr>
+                <a href="dashboard.html" class="navigation__item">
+                    <span class="material-symbols-outlined">grid_view</span>
+                    <span class="fw-semibold">Dashboard</span>
+                </a>
+                <a href="profile.html" class="navigation__item">
+                    <span class="material-symbols-outlined">group</span>
+                    <span class="fw-semibold">Profile</span>
+                </a>
+                <hr>
+                <a href="new.html" class="navigation__item">
+                    <span class="material-symbols-outlined">docs_add_on</span>
+                    <span class="fw-semibold">New</span>
+                </a>
+                <a href="open.html" class="navigation__item">
+                    <span class="material-symbols-outlined">article</span>
+                    <span class="fw-semibold">Open</span>
+                </a>
+                <a href="assigned.html" class="navigation__item">
+                    <span class="material-symbols-outlined">demography</span>
+                    <span class="fw-semibold">Assigned</span>
+                </a>
+                <a href="overdue.html" class="navigation__item">
+                    <span class="material-symbols-outlined">overview</span>
+                    <span class="fw-semibold">Overdue</span>
+                </a>
+                <a href="closed.html" class="navigation__item">
+                    <span class="material-symbols-outlined">task</span>
+                    <span class="fw-semibold">Closed</span>
+                </a>
+                <a href="trace.html" class="navigation__item">
+                    <span class="material-symbols-outlined">find_in_page</span>
+                    <span class="fw-semibold">Trace</span>
+                </a>
+                <a href="receive.html" class="navigation__item">
+                    <span class="material-symbols-outlined">approval_delegation</span>
+                    <span class="fw-semibold">Receive</span>
+                </a>
+                <a href="retrieve.html" class="navigation__item">
+                    <span class="material-symbols-outlined">approval_delegation_off</span>
+                    <span class="fw-semibold">Retrieve</span>
+                </a>
+                <hr>
+                <a href="transactions.html" class="navigation__item">
+                    <span class="material-symbols-outlined">book_4</span>
+                    <span class="fw-semibold">Individual Transactions</span>
+                </a>
+                <hr>
+                <a href="staff.html" class="navigation__item">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span class="fw-semibold">Staff Members</span>
+                </a>
+                <a href="document-details.html" class="navigation__item">
+                    <span class="material-symbols-outlined">clarify</span>
+                    <span class="fw-semibold">Document Details</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="content">
+            <nav class="topbar">
+                <span class="material-symbols-outlined"><button type="button"
+                        class="btn btn-outline-warning">&#xe5d2</button></span>
+                <h5>Document Tracking System</h5>
+                <span class="material-symbols-outlined"><button type="button"
+                        class="btn btn-outline-warning">&#xe51c</button></span>
+            </nav>
+            <main>
+                <div id="receive-content">
+                    <h3>Receive Documents</h3>
+
+                    <div class="d-flex justify-content-center mb-4">
+                        <input type="text" id="searchReceive" class="form-control" style="width: 1000px;"
+                            placeholder="Enter ticket number here (Ex. DT202500000) ">
+                    </div>
+
+                    <h4>Documents to Receive</h4>
+
+                    <!-- Show Entries -->
+                    <div class="d-flex justify-content-end mb-2">
+                        <label for="showEntriesReceive" class="fw-semibold mb-0">
+                            Show:
+                            <select id="showEntriesReceive" class="form-select d-inline-block w-auto mx-2">
+                                <option value="1" selected>1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                            </select>
+                            entries
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-center mb-4">
+                        <input type="text" id="searchReceive" class="form-control" style="width: 1000px;"
+                            placeholder="Search: ">
+                    </div>
+
+                    <!-- Table Header -->
+                    <div class="d-flex justify-content-center">
+                        <div style="width: 1000px;">
+                            <div class="row fw-bold border-bottom pb-2 mb-3 text-center">
+                                <div class="col-2"></div>
+                                <div class="col-4">Date</div>
+                                <div class="col-6">Subject</div>
+                            </div>
+
+                            <!-- Receive Items -->
+                            <div class="receive-item border p-3 mb-3">
+                                <div class="row align-items-center text-center">
+                                    <div class="col-2 text-start">
+                                        <button class="btn btn-primary rounded-circle toggle-receive">+</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <strong>2025-05-29</strong>
+                                    </div>
+                                    <div class="col-6 d-flex align-items-center justify-content-center">
+                                        <strong>Request to Extend</strong>
+                                    </div>
+                                </div>
+                                <div class="details mt-3" style="display: none;">
+                                    <hr>
+                                    <p><strong>Details:</strong> Yeah Yah </p>
+                                    <p><strong>Document Type:</strong> abc </p>
+                                    <div class="text-center">
+                                        <button class="btn btn-primary">Receive</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="receive-item border p-3 mb-3">
+                                <div class="row align-items-center text-center">
+                                    <div class="col-2 text-start">
+                                        <button class="btn btn-primary rounded-circle toggle-receive">+</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <strong>2025-05-30</strong>
+                                    </div>
+                                    <div class="col-6 d-flex align-items-center justify-content-center">
+                                        <strong>Request for approval to conduct in person</strong>
+                                    </div>
+                                </div>
+                                <div class="details mt-3" style="display: none;">
+                                    <hr>
+                                    <p><strong>Details:</strong></p>
+                                    <p><strong>Document Type:</strong></p>
+                                    <div class="text-center">
+                                        <button class="btn btn-primary">Receive</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="receive-item border p-3 mb-3">
+                                <div class="row align-items-center text-center">
+                                    <div class="col-2 text-start">
+                                        <button class="btn btn-primary rounded-circle toggle-receive">+</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <strong>2025-05-31</strong>
+                                    </div>
+                                    <div class="col-6 d-flex align-items-center justify-content-center">
+                                        <strong>Request to Extend</strong>
+                                    </div>
+                                </div>
+                                <div class="details mt-3" style="display: none;">
+                                    <hr>
+                                    <p><strong>Details:</strong></p>
+                                    <p><strong>Document Type:</strong></p>
+                                    <div class="text-center">
+                                        <button class="btn btn-primary">Receive</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        // Receive Dropdown
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('toggle-receive')) {
+                const details = e.target.closest('.receive-item').querySelector('.details');
+                const isOpen = details.style.display === 'block';
+                details.style.display = isOpen ? 'none' : 'block';
+                e.target.textContent = isOpen ? '+' : '−';
+                e.target.classList.toggle('btn-primary', isOpen);
+                e.target.classList.toggle('btn-danger', !isOpen);
+            }
+        });
+
+        // Show & Entries in Receive Section
+        const showSelectReceive = document.getElementById('showEntriesReceive');
+        const searchReceive = document.getElementById('searchReceive');
+
+        function updateReceiveList() {
+            const count = parseInt(showSelectReceive.value);
+            const searchText = searchReceive.value.toLowerCase();
+            const receiveItems = document.querySelectorAll('.receive-item');
+
+            let shown = 0;
+            receiveItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const match = text.includes(searchText);
+
+                if (match && shown < count) {
+                    item.style.display = 'block';
+                    shown++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        showSelectReceive.addEventListener('change', updateReceiveList);
+        searchReceive.addEventListener('input', updateReceiveList);
+        window.addEventListener('DOMContentLoaded', updateReceiveList);
+    </script>
+</body>
+
+</html>
