@@ -7,11 +7,12 @@ import { usernameProvider } from "@utils/usernameProvider";
 import { z } from "zod";
 import { eq, getTableColumns } from "drizzle-orm";
 import { departments as departmentsModel } from "@db/models/departments";
+import { sessionAuth } from "@middlewares/sessionAuth";
 
 const userRouter = new Hono();
 
 //#region users - GET ALL
-userRouter.get("/", async (c) => {
+userRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
 		const { limit, offset, department } = c.req.query();
 		const querySchema = z.object({

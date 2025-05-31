@@ -20,7 +20,7 @@ indexRouter.get("/", (c) => {
 });
 //#endregion
 
-//#region Check - GET [ANY]
+//#region Check - [ANY] GET
 indexRouter.get("/check", sessionAuth("any"), async (c) => {
 	const id = c.get("userId");
 	c.status(200);
@@ -72,7 +72,7 @@ indexRouter.post("/login", zValidator("form", zLogin), async (c) => {
 //#endregion
 
 //#region Logout - POST
-indexRouter.post("/logout", async (c) => {
+indexRouter.post("/logout", sessionAuth("any"), async (c) => {
 	const cookie = getCookie(c, "dts.sid");
 	if (cookie) {
 		await destroySession(cookie);
