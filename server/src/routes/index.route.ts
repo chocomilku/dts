@@ -67,7 +67,7 @@ indexRouter.post("/login", zValidator("form", zLogin), async (c) => {
 	});
 
 	c.status(200);
-	return c.json({ message: "Login Successful!" });
+	return c.json({ message: "Successfully Logged in!" });
 });
 //#endregion
 

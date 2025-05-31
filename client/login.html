@@ -6,12 +6,31 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/login.css">
     <script defer src="js/bootstrap.bundle.min.js"></script>
+    <script defer type="module" src="js/login.page.js"></script>
     <title>Login | Document Tracking System</title>
 </head>
 <body>
     <main class="card">
-        <h3>Login</h3>
+        <img src="static/Logo Banner.png" alt="banner" class="banner">
+        <h5><b>Log in to Document Tracking System</b></h5>
+        <form class="needs-validation" novalidate>
+            <div>
+                <label for="username" class="form-label">Username</label>
+                <input type="text" name="username" id="username" class="form-control" required>
+                <div class="invalid-feedback" data-original-message="Please input your username.">Please input your
+                    username.</div>
+            </div>
+
+            <div>
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" id="password" class="form-control" required>
+                <div class="invalid-feedback" data-original-message="Please input your password.">Please input your
+                    password.</div>
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary" id="form-submit">Log In</button>
+        </form>
     </main>
-    <img src="./static/Login BG.jpg" alt="background" class="bg">
+    <img src="static/Login BG.jpg" alt="background" class="bg">
 </body>
 </html>

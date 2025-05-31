@@ -1,6 +1,5 @@
 import { statusRedirect, redirect } from "./statusRedirect.js";
-
-const API_URL = "http://localhost:54321";
+import { API_URL } from "./constants.js";
 
 (async () => {
     try {
