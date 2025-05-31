@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script defer src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/sidenavbar.js"></script>
+    <script defer src="js/sidenavbar.js"></script>
+    <script defer type="module" src="js/navbarData.js"></script>
 </head>
 
 <body>
@@ -26,8 +27,8 @@
                 <div class="profile">
                     <img src="./static/Avatar.png" alt="avatar">
                     <div class="profile__info">
-                        <h6 class="fw-bold">Juan Dela Cruz</h6>
-                        <p class="fw-light">IT Dept.</p>
+                        <h6 class="fw-bold" id="profile__name">&nbsp;</h6>
+                        <p class="fw-light" id="profile__dept">&nbsp;</p>
                     </div>
                     <div class="profile__dropdown">▼</div>
                 </div>
