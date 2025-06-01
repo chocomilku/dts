@@ -7,9 +7,11 @@
     <title>Dashboard | Document Tracking System</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.page.css">
     <script defer src="js/bootstrap.bundle.min.js"></script>
     <script defer src="js/sidenavbar.js"></script>
     <script defer type="module" src="js/navbarData.js"></script>
+    <script defer type="module" src="js/dashboard.page.js"></script>
 </head>
 
 <body>
@@ -27,8 +29,8 @@
                 <div class="profile">
                     <img src="./static/Avatar.png" alt="avatar">
                     <div class="profile__info">
-                        <h6 class="fw-bold" id="profile__name">&nbsp;</h6>
-                        <p class="fw-light" id="profile__dept">&nbsp;</p>
+                        <h4 class="fw-bold profile__name">&nbsp;</h4>
+                        <p class="fw-light profile__dept">&nbsp;</p>
                     </div>
                     <div class="profile__dropdown">▼</div>
                 </div>
@@ -101,9 +103,36 @@
                 <span class="material-symbols-outlined"><button type="button"
                         class="btn btn-outline-warning">&#xe51c</button></span>
             </nav>
-            <main>
-                content
-                <!-- dito maglagay ng content -->
+            <main class="container-xl">
+                <h1><b>Welcome to Document Tracking System, <span class="profile__name">&nbsp;</span>!</b></h1>
+                <div class="counters">
+                    <div class="counter">
+                        <h1 class="display-2 fw-semibold">0</h1>
+                        <b>
+                            <h5>Open</h5>
+                        </b>
+                    </div>
+                    <div class="counter">
+                        <h1 class="display-2 fw-semibold">0</h1>
+                        <b>
+                            <h5>Overdue</h5>
+                        </b>
+                    </div>
+                    <div class="counter">
+                        <h1 class="display-2 fw-semibold">0</h1>
+                        <b>
+                            <h5>Assigned to me</h5>
+                        </b>
+                    </div>
+                    <div class="counter">
+                        <h1 class="display-2 fw-semibold">0</h1>
+                        <b>
+                            <h5>Closed</h5>
+                        </b>
+                    </div>
+                </div>
+
+                <table id="dashboard-table"></table>
             </main>
         </div>
     </div>

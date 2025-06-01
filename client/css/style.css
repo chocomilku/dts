@@ -29,12 +29,14 @@
 }
 
 /* layout specfic */
+body {
+    background-color: var(--bs-gray-200);
+}
+
 /* page */
 .page {
-    min-height: 100vh;
     display: flex;
     flex-direction: row;
-    background-color: var(--bs-gray-200);
 }
 
 .content {
@@ -70,7 +72,7 @@
     width: 400px;
     opacity: 100%;
     visibility: visible;
-    transition: width 500ms ease, opacity 250ms ease, visibility 250ms ease, padding 500ms ease;
+    transition: width 500ms ease, opacity 250ms ease-out, visibility 250ms ease-out, padding 500ms ease;
 }
 
 .sidebar {
@@ -116,19 +118,6 @@
     margin: 0;
 }
 
-@media screen and (max-width: 620px) {
-    .hamburger-mobile {
-        display: block;
-    }
-
-    .sidebar__wrapper {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-    }
-}
-
 /* sidebar profile */
 .profile {
     color: var(--bs-white);
@@ -151,7 +140,7 @@
 }
 
 .profile__info {
-    line-height: 0.2;
+    line-height: 1;
     margin: auto 0;
 }
 
@@ -185,4 +174,22 @@
 .navigation__item:hover {
     background-color: var(--bs-gray-800);
     color: var(--bs-white);
+}
+
+@media screen and (max-width: 620px) {
+    .hamburger-mobile {
+        display: block;
+    }
+
+    .sidebar__wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    .content main {
+        padding: 1rem;
+        width: 100%;
+    }
 }

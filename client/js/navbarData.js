@@ -19,12 +19,21 @@ const loadUserData = async () => {
          * }[]}}
          */
         const user = await res.json();
-        console.log(user)
-        const nameElem = document.getElementById('profile__name')
-        const deptElem = document.getElementById('profile__dept')
+        const nameElem = document.getElementsByClassName('profile__name')
+        const deptElem = document.getElementsByClassName('profile__dept')
 
-        if (nameElem) nameElem.textContent = user.data[0].name ?? "Unknown"
-        if (deptElem) deptElem.textContent = user.data[0].department?.name ?? "No Department"
+        if (nameElem) {
+            for (let i = 0; i < nameElem.length; i++) {
+                nameElem[i].textContent = user.data[0].name ?? "Unknown";
+            }
+
+        }
+
+        if (deptElem) {
+            for (let i = 0; i < deptElem.length; i++) {
+                deptElem[i].textContent = user.data[0].department?.name ?? "No Department";
+            }
+        }
 
     } catch (e) {
         console.error(e);

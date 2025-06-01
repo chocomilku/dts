@@ -8,84 +8,94 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script defer src="js/bootstrap.bundle.min.js"></script>
+    <script defer src="js/sidenavbar.js"></script>
+    <script defer type="module" src="js/navbarData.js"></script>
 </head>
 
 <body>
     <div class="page">
-        <nav class="sidebar">
-            <img src="./static/Logo Banner.png" alt="banner" class="sidebar__banner">
-            <hr>
-            <div class="profile">
-                <img src="./static/Avatar.png" alt="avatar">
-                <div class="profile__info">
-                    <h6 class="fw-bold">Juan Dela Cruz</h6>
-                    <p class="fw-light">IT Dept.</p>
+        <div class="sidebar__wrapper sidebar-no-transition">
+            <nav class="sidebar">
+                <div class="sidebar__top">
+                    <img src="./static/Logo Banner.png" alt="banner" class="sidebar__banner">
+                    <div class="hamburger-mobile">
+                        <button type="button" onclick="toggleSidebar()"
+                            class="btn btn-outline-warning material-symbols-outlined">&#xe5d2</button>
+                    </div>
                 </div>
-                <div class="profile__dropdown">▼</div>
-            </div>
-            <div class="navigation">
                 <hr>
-                <a href="dashboard.html" class="navigation__item">
-                    <span class="material-symbols-outlined">grid_view</span>
-                    <span class="fw-semibold">Dashboard</span>
-                </a>
-                <a href="profile.html" class="navigation__item">
-                    <span class="material-symbols-outlined">group</span>
-                    <span class="fw-semibold">Profile</span>
-                </a>
-                <hr>
-                <a href="new.html" class="navigation__item">
-                    <span class="material-symbols-outlined">docs_add_on</span>
-                    <span class="fw-semibold">New</span>
-                </a>
-                <a href="open.html" class="navigation__item">
-                    <span class="material-symbols-outlined">article</span>
-                    <span class="fw-semibold">Open</span>
-                </a>
-                <a href="assigned.html" class="navigation__item">
-                    <span class="material-symbols-outlined">demography</span>
-                    <span class="fw-semibold">Assigned</span>
-                </a>
-                <a href="overdue.html" class="navigation__item">
-                    <span class="material-symbols-outlined">overview</span>
-                    <span class="fw-semibold">Overdue</span>
-                </a>
-                <a href="closed.html" class="navigation__item">
-                    <span class="material-symbols-outlined">task</span>
-                    <span class="fw-semibold">Closed</span>
-                </a>
-                <a href="trace.html" class="navigation__item">
-                    <span class="material-symbols-outlined">find_in_page</span>
-                    <span class="fw-semibold">Trace</span>
-                </a>
-                <a href="receive.html" class="navigation__item">
-                    <span class="material-symbols-outlined">approval_delegation</span>
-                    <span class="fw-semibold">Receive</span>
-                </a>
-                <a href="retrieve.html" class="navigation__item">
-                    <span class="material-symbols-outlined">approval_delegation_off</span>
-                    <span class="fw-semibold">Retrieve</span>
-                </a>
-                <hr>
-                <a href="transactions.html" class="navigation__item">
-                    <span class="material-symbols-outlined">book_4</span>
-                    <span class="fw-semibold">Individual Transactions</span>
-                </a>
-                <hr>
-                <a href="staff.html" class="navigation__item">
-                    <span class="material-symbols-outlined">groups</span>
-                    <span class="fw-semibold">Staff Members</span>
-                </a>
-                <a href="document-details.html" class="navigation__item">
-                    <span class="material-symbols-outlined">clarify</span>
-                    <span class="fw-semibold">Document Details</span>
-                </a>
-            </div>
-        </nav>
+                <div class="profile">
+                    <img src="./static/Avatar.png" alt="avatar">
+                    <div class="profile__info">
+                        <h6 class="fw-bold profile__name">&nbsp;</h6>
+                        <p class="fw-light profile__dept">&nbsp;</p>
+                    </div>
+                    <div class="profile__dropdown">▼</div>
+                </div>
+                <div class="navigation">
+                    <hr>
+                    <a href="dashboard.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">grid_view</span>
+                        <span class="fw-semibold">Dashboard</span>
+                    </a>
+                    <a href="profile.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">group</span>
+                        <span class="fw-semibold">Profile</span>
+                    </a>
+                    <hr>
+                    <a href="new.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">docs_add_on</span>
+                        <span class="fw-semibold">New</span>
+                    </a>
+                    <a href="open.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">article</span>
+                        <span class="fw-semibold">Open</span>
+                    </a>
+                    <a href="assigned.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">demography</span>
+                        <span class="fw-semibold">Assigned</span>
+                    </a>
+                    <a href="overdue.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">overview</span>
+                        <span class="fw-semibold">Overdue</span>
+                    </a>
+                    <a href="closed.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">task</span>
+                        <span class="fw-semibold">Closed</span>
+                    </a>
+                    <a href="trace.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">find_in_page</span>
+                        <span class="fw-semibold">Trace</span>
+                    </a>
+                    <a href="receive.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation</span>
+                        <span class="fw-semibold">Receive</span>
+                    </a>
+                    <a href="retrieve.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation_off</span>
+                        <span class="fw-semibold">Retrieve</span>
+                    </a>
+                    <hr>
+                    <a href="transactions.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">book_4</span>
+                        <span class="fw-semibold">Individual Transactions</span>
+                    </a>
+                    <hr>
+                    <a href="staff.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">groups</span>
+                        <span class="fw-semibold">Staff Members</span>
+                    </a>
+                    <a href="document-details.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">clarify</span>
+                        <span class="fw-semibold">Document Details</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
 
         <div class="content">
             <nav class="topbar">
-                <span class="material-symbols-outlined"><button type="button"
+                <span class="material-symbols-outlined"><button type="button" onclick="toggleSidebar()"
                         class="btn btn-outline-warning">&#xe5d2</button></span>
                 <h5>Document Tracking System</h5>
                 <span class="material-symbols-outlined"><button type="button"
