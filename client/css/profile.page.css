@@ -1,0 +1,11 @@
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.update-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
