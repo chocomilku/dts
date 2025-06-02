@@ -1,0 +1,16 @@
+:80 {
+    root * /srv/
+    reverse_proxy /api/* http://dts-server:54321
+    try_files {path}.html
+    file_server {
+        hide .git
+    }
+
+    log {
+        output file /var/log/caddy/my-static-site.log
+    }
+
+    header {
+        ?Cache-Control "max-age=1800"
+    }
+}

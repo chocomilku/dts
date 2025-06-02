@@ -1,8 +1,58 @@
+name: dts
 services:
   redis:
-    container_name: redis
+    container_name: dts-redis
     image: redis:8.0.1
     restart: unless-stopped
     ports:
       - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    networks:
+      - net
+
+  server-dev:
+    profiles: [dev]
+    container_name: dts-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./server:/app
+      - ./database:/database
+    ports:
+      - "54321:54321"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - redis
+    networks:
+      - net
+
+  client-dev:
+    container_name: dts-client
+    profiles: [dev]
+    image: caddy:2.10.0
+    restart: unless-stopped
+    volumes:
+      - ./config/caddy:/etc/caddy
+      - ./client:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    depends_on:
+      - server-dev
+    networks:
+      - net
+
+volumes:
+  redis_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  net:
