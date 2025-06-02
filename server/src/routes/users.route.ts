@@ -72,7 +72,7 @@ userRouter.get("/@me", sessionAuth("any"), async (c) => {
 	try {
 		const userId = c.get("userId");
 
-		const { password, username, birthdate, departmentId, ...usersRest } =
+		const { password, birthdate, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
 		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
 

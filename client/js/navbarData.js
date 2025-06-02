@@ -9,12 +9,12 @@ const loadUserData = async () => {
         /**
          * @type {{message: string, data: {
          * department: {
-         * id: number;
-         * name: string;
-         * } | null;
+         *  id: number;
+         *  name: string} | null;
          * id: number;
          * role: "superadmin" | "admin" | "clerk" | "officer";
          * name: string;
+         * username: string;
          * createdAt: string | null;
          * }[]}}
          */
