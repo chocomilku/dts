@@ -10,7 +10,6 @@ export const users = sqliteTable("users", {
 	departmentId: int().references(() => departments.id),
 	username: text().notNull().unique(),
 	password: text().notNull(),
-	birthdate: text().notNull(),
 	createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
 });
 
@@ -19,7 +18,6 @@ export const zUsers = z.object({
 	name: z.string(),
 	departmentId: z.coerce.number(),
 	password: z.string(),
-	birthdate: z.coerce.date(),
 });
 
 export const zLogin = z.object({

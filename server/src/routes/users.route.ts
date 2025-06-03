@@ -36,7 +36,7 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 			return c.json(parsedData.error);
 		}
 
-		const { password, username, birthdate, departmentId, ...usersRest } =
+		const { password, username, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
 		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
 
@@ -72,7 +72,7 @@ userRouter.get("/@me", sessionAuth("any"), async (c) => {
 	try {
 		const userId = c.get("userId");
 
-		const { password, birthdate, departmentId, ...usersRest } =
+		const { password, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
 		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
 
@@ -120,7 +120,7 @@ userRouter.get("/:id", sessionAuth("any"), async (c) => {
 
 		const safeId = parsedData.data.id;
 
-		const { password, username, birthdate, departmentId, ...usersRest } =
+		const { password, username, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
 		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
 
@@ -164,7 +164,6 @@ userRouter.post("/", zValidator("form", zUsers), async (c) => {
 				departmentId: validated.departmentId,
 				username: await usernameProvider(),
 				password: passwordHash,
-				birthdate: validated.birthdate.toISOString(),
 			})
 			.returning({ id: usersModel.id, username: usersModel.username });
 
@@ -181,6 +180,11 @@ userRouter.post("/", zValidator("form", zUsers), async (c) => {
 		}
 	}
 });
+//#endregion
+
+//#region user - PUT
+userRouter.put("/:id");
+
 //#endregion
 
 export default userRouter;

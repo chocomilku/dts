@@ -26,7 +26,6 @@ departmentRouter.get("/", sessionAuth("any"), async (c) => {
 		return c.json({ message: "Internal Server Error" });
 	}
 });
-
 //#endregion
 
 //#region departments - POST
