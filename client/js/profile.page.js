@@ -3,8 +3,10 @@ import { statusRedirect } from "./statusRedirect.js";
 
 const loadUserData = async () => {
     try {
-        const res = await fetch(`${API_URL}/api/users/@me`, { credentials: "include" })
-        if (statusRedirect(res, "href")) return;
+        const resUserMe = await fetch(`${API_URL}/api/users/@me`, { credentials: "include" })
+        const resDepts = await fetch(`${API_URL}/api/departments`)
+        if (statusRedirect(resUserMe, "href")) return;
+        if (statusRedirect(resDepts, "href")) return;
 
         /**
          * @type {{message: string, data: {
@@ -18,8 +20,20 @@ const loadUserData = async () => {
         * createdAt: string | null;
         * }[]}}
         */
-        const user = await res.json();
+        const user = await resUserMe.json();
+
+        /**
+         * @type {{
+         * message: string,
+         * data: {
+         * id: number;
+         * name: string;
+         * }[]}
+         * }
+         */
+        const departments = await resDepts.json();
         console.log(user)
+        console.log(departments);
 
         const nameElem = document.getElementById('name')
         const roleElem = document.getElementById('role') //HTMLSelectElement
@@ -27,24 +41,44 @@ const loadUserData = async () => {
         const userElem = document.getElementById('username')
         const passElem = document.getElementById('password')
 
+        if (!deptElem) return;
+        if (!(deptElem instanceof HTMLSelectElement)) return;
+
+        departments.data.forEach((d) => {
+            const element = document.createElement("option");
+            element.value = d.id.toString();
+            element.innerText = d.name;
+
+            deptElem.add(element);
+        })
 
         const autoFields = [{ key: "name", element: nameElem }, { key: "role", element: roleElem }, { key: "username", element: userElem }]
 
-        autoFields.forEach((e) => {
-            if (!e.element || !(e.element instanceof HTMLInputElement)) return;
+        autoFields.forEach((el) => {
+            const e = el.element
+            if (!e) return;
+            if (e instanceof HTMLInputElement) {
+                e.value = user.data[0][el.key]
+            }
 
-            e.element.value = user.data[0][e.key]
+            if (e instanceof HTMLSelectElement) {
+                e.value = user.data[0][el.key]
+            }
         })
 
         if (user.data[0].role != "superadmin") {
             const restrictFields = [roleElem, deptElem, userElem]
             restrictFields.forEach((e) => {
-                console.log(e?.nodeName)
-                if (!e || !(e instanceof HTMLInputElement)) return;
-                e.disabled = true;
+                if (!e) return;
+                if (e instanceof HTMLInputElement) {
+                    e.disabled = true;
+                }
+
+                if (e instanceof HTMLSelectElement) {
+                    e.disabled = true;
+                }
             })
         }
-        // FIXME: role cant be assigned as HTMLInputElement
 
     } catch (e) {
         console.error(e);

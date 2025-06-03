@@ -1,16 +1,17 @@
 :80 {
-    root * /srv/
-    reverse_proxy /api/* http://dts-server:54321
-    try_files {path}.html
-    file_server {
-        hide .git
-    }
+	root * /srv/
+	reverse_proxy /api/* http://dts-server:54321
 
-    log {
-        output file /var/log/caddy/my-static-site.log
-    }
+	@stripExtensions path_regexp strip (.*)\.(html)
+	redir @stripExtensions {re.strip.1} 301
 
-    header {
-        ?Cache-Control "max-age=1800"
-    }
+	try_files {path} {path}/ {path}.html
+	#   try_files {path}.html
+	file_server {
+		hide .git
+	}
+
+	log {
+		output file /var/log/caddy/my-static-site.log
+	}
 }

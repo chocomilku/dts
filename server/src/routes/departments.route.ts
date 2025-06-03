@@ -7,8 +7,27 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { SQLiteError } from "bun:sqlite";
 import { sessionAuth } from "@middlewares/sessionAuth";
+import { getTableColumns } from "drizzle-orm";
 
 const departmentRouter = new Hono();
+
+//#region departments - GET ALL
+departmentRouter.get("/", sessionAuth("any"), async (c) => {
+	try {
+		const { createdAt, ...deptsRest } = getTableColumns(departmentsModel);
+
+		const data = await db.select({ ...deptsRest }).from(departmentsModel);
+
+		c.status(200);
+		return c.json({ message: "OK", data });
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+
+//#endregion
 
 //#region departments - POST
 departmentRouter.post(
