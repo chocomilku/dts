@@ -183,7 +183,107 @@ userRouter.post("/", zValidator("form", zUsers), async (c) => {
 //#endregion
 
 //#region user - PUT
-userRouter.put("/:id");
+userRouter.put(
+	"/:id",
+	sessionAuth("any"),
+	zValidator("form", zUsers.partial()),
+	async (c) => {
+		const validatedForm = c.req.valid("form");
+		const { id } = c.req.param();
+
+		const querySchema = z.coerce.number().int().positive();
+		const parsedData = querySchema.safeParse(id);
+
+		if (!parsedData.success) {
+			c.status(400);
+			return c.json(parsedData.error);
+		}
+
+		const safeId = parsedData.data;
+		let newPasswordHash = undefined;
+
+		if (validatedForm?.password) {
+			newPasswordHash = await Bun.password.hash(validatedForm.password);
+		}
+
+		try {
+			const { role, departmentId } = getTableColumns(usersModel);
+
+			// fetch requester
+			const requesterData = await db
+				.select({ role, departmentId })
+				.from(usersModel)
+				.limit(1)
+				.where(eq(usersModel.id, c.get("userId")));
+
+			if (requesterData.length !== 1) {
+				c.status(403);
+				return c.json({ message: "Requester not found." });
+			}
+
+			const requester = requesterData[0];
+
+			// fetch target user
+			const targetUserData = await db
+				.select({ departmentId })
+				.from(usersModel)
+				.limit(1)
+				.where(eq(usersModel.id, safeId));
+
+			if (targetUserData.length !== 1) {
+				c.status(404);
+				return c.json({ message: "Target user not found." });
+			}
+
+			const targetUser = targetUserData[0];
+
+			// admin can only edit members of their department
+			if (requester.role == "admin") {
+				if (targetUser.departmentId != requester.departmentId) {
+					c.status(403);
+					return c.json({
+						message: "Admins can only edit users in their department.",
+					});
+				}
+			} else if (requester.role == "clerk" || requester.role == "officer") {
+				if (c.get("userId") != safeId) {
+					c.status(403);
+					return c.json({ message: "You can only edit your own data." });
+				}
+			}
+
+			if (requester.role != "superadmin") {
+				if (
+					validatedForm?.role != undefined ||
+					validatedForm?.departmentId != undefined
+				) {
+					c.status(403);
+					return c.json({
+						message:
+							"'Role' and 'Department' can only be edited with superadmin role",
+					});
+				}
+			}
+
+			await db
+				.update(usersModel)
+				.set({
+					role: validatedForm?.role,
+					name: validatedForm?.name,
+					departmentId: validatedForm?.departmentId,
+					password: newPasswordHash,
+				})
+				.where(eq(usersModel.id, safeId));
+
+			c.status(204);
+			return c.json({});
+		} catch (e) {
+			console.error(e);
+			c.status(500);
+			return c.json({ message: "Internal Server Error" });
+		}
+	}
+);
 
 //#endregion
 

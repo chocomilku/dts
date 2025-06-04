@@ -35,11 +35,13 @@ const loadUserData = async () => {
         console.log(user)
         console.log(departments);
 
+        const idElem = document.getElementById('userId')
         const nameElem = document.getElementById('name')
         const roleElem = document.getElementById('role') //HTMLSelectElement
         const deptElem = document.getElementById('department')
         const userElem = document.getElementById('username')
         const passElem = document.getElementById('password')
+
 
         if (!deptElem) return;
         if (!(deptElem instanceof HTMLSelectElement)) return;
@@ -52,7 +54,7 @@ const loadUserData = async () => {
             deptElem.add(element);
         })
 
-        const autoFields = [{ key: "name", element: nameElem }, { key: "role", element: roleElem }, { key: "username", element: userElem }]
+        const autoFields = [{ key: "name", element: nameElem }, { key: "role", element: roleElem }, { key: "username", element: userElem }, { key: "id", element: idElem }]
 
         autoFields.forEach((el) => {
             const e = el.element
@@ -67,7 +69,7 @@ const loadUserData = async () => {
         })
 
         if (user.data[0].role != "superadmin") {
-            const restrictFields = [roleElem, deptElem, userElem]
+            const restrictFields = [roleElem, deptElem, userElem, idElem]
             restrictFields.forEach((e) => {
                 if (!e) return;
                 if (e instanceof HTMLInputElement) {
@@ -86,4 +88,69 @@ const loadUserData = async () => {
     }
 }
 
+const profileFormHandling = async () => {
+    const formElem = document.getElementById('update-form');
+    const btn = document.getElementById("form-submit");
+    const alertPlaceholder = document.getElementById("alert-placeholder");
+
+    if (!formElem) return;
+    if (formElem instanceof HTMLFormElement) {
+        formElem.addEventListener('submit', async (event) => {
+            event.preventDefault()
+
+            if (!btn) return;
+            if (!(btn instanceof HTMLButtonElement)) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  Updating...`
+
+
+            /** @type {HTMLInputElement} */
+            const userIdValue = formElem.elements["userId"]
+            /** @type {HTMLInputElement} */
+            const nameValue = formElem.elements["name"]
+            /** @type {HTMLSelectElement} */
+            const roleValue = formElem.elements["role"]
+            /** @type {HTMLInputElement} */
+            const deptValue = formElem.elements["department"]
+            /** @type {HTMLInputElement} */
+            const userValue = formElem.elements["username"]
+            /** @type {HTMLInputElement} */
+            const passValue = formElem.elements["password"]
+
+            const reqBody = new URLSearchParams();
+            const elements = [nameValue, roleValue, deptValue, userValue, passValue];
+            for (const el of elements) {
+                if ((!el.disabled) && (el.name) && (el.value !== "")) {
+                    reqBody.append(el.name, el.value)
+                }
+            }
+
+            const res = await fetch(`${API_URL}/api/users/${userIdValue.value}`, {
+                method: "PUT",
+                body: reqBody,
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                credentials: "include"
+            })
+
+            if (!res.ok) {
+                btn.disabled = false;
+                btn.innerHTML = `Save`
+                if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">An error occurred.</div>`;
+                console.error(await res.json());
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = "Updated Successfully";
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000)
+            }
+        })
+    }
+}
+
 document.addEventListener("DOMContentLoaded", loadUserData);
+document.addEventListener("DOMContentLoaded", profileFormHandling);
