@@ -7,7 +7,6 @@
     <title>Profile | Document Tracking System</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/profile.page.css">
     <script defer src="js/bootstrap.bundle.min.js"></script>
     <script defer src="js/sidenavbar.js"></script>
     <script defer type="module" src="js/navbarData.js"></script>
@@ -109,25 +108,25 @@
                     only be updated by your department admin or organization's superadmin. 'Department' can only be
                     updated by the organization's superadmin.</p>
                 <div class="main-content">
-                    <h3><b>Profile Information</b></h3>
+                    <h2><b>Profile Information</b></h2>
                     <div id="alert-placeholder"></div>
                     <div class="set-avatar">
                         <img src="./static/Avatar.png" alt="avatar" class="profile__avatar">
                         <button class="btn btn-warning mx-4">Upload Avatar</button>
                     </div>
-                    <form class="update-form" id="update-form" novalidate>
+                    <form class="d-flex flex-column gap-2" id="update-form" novalidate>
                         <div>
-                            <label for="userId" class="form-label">User ID</label>
+                            <label for="userId" class="form-label"><b>User ID</b></label>
                             <input type="text" name="userId" id="userId" class="form-control" disabled>
                         </div>
 
                         <div>
-                            <label for="name" class="form-label">Name</label>
+                            <label for="name" class="form-label"><b>Name</b></label>
                             <input type="text" name="name" id="name" class="form-control">
                         </div>
 
                         <div>
-                            <label for="role" class="form-label">Role</label>
+                            <label for="role" class="form-label"><b>Role</b></label>
                             <select name="role" id="role" class="form-select">
                                 <option value="superadmin">superadmin</option>
                                 <option value="admin">admin</option>
@@ -137,17 +136,17 @@
                         </div>
 
                         <div>
-                            <label for="department" class="form-label">Department</label>
+                            <label for="department" class="form-label"><b>Department</b></label>
                             <select name="department" id="department" class="form-select"></select>
                         </div>
 
                         <div>
-                            <label for="username" class="form-label">Username</label>
+                            <label for="username" class="form-label"><b>Username</b></label>
                             <input type="text" name="username" id="username" class="form-control" disabled>
                         </div>
 
                         <div>
-                            <label for="password" class="form-label">Password</label>
+                            <label for="password" class="form-label"><b>Password</b></label>
                             <input type="password" name="password" id="password" class="form-control">
                         </div>
 

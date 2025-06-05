@@ -176,6 +176,8 @@ body {
     color: var(--bs-white);
 }
 
+/* utility class */
+
 .main-content {
     background: var(--bs-white);
     width: 100%;
@@ -183,7 +185,18 @@ body {
     margin: 2rem 0rem;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
+
+label.required::after {
+    content: "*";
+    color: var(--bs-danger);
+}
+
+/* media queries */
 
 @media screen and (max-width: 620px) {
     .hamburger-mobile {

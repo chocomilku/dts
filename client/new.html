@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Document | Document Tracking System</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/summernote-bs5.min.css">
+    <script defer src="js/jquery-3.7.1.min.js"></script>
+    <script defer src="js/bootstrap.bundle.min.js"></script>
+    <script defer src="js/summernote-bs5.min.js"></script>
+    <script defer type="module" src="js/navbarData.js"></script>
+    <script defer src="js/new.page.js"></script>
+</head>
+
+<body>
+    <div class="page">
+        <div class="sidebar__wrapper sidebar-no-transition">
+            <nav class="sidebar">
+                <div class="sidebar__top">
+                    <img src="./static/Logo Banner.png" alt="banner" class="sidebar__banner">
+                    <div class="hamburger-mobile">
+                        <button type="button" onclick="toggleSidebar()"
+                            class="btn btn-outline-warning material-symbols-outlined">&#xe5d2</button>
+                    </div>
+                </div>
+                <hr>
+                <div class="profile">
+                    <img src="./static/Avatar.png" alt="avatar" class="profile__avatar">
+                    <div class="profile__info">
+                        <h4 class="fw-bold profile__name">&nbsp;</h4>
+                        <p class="fw-light profile__dept">&nbsp;</p>
+                    </div>
+                    <div class="profile__dropdown">▼</div>
+                </div>
+                <div class="navigation">
+                    <hr>
+                    <a href="dashboard.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">grid_view</span>
+                        <span class="fw-semibold">Dashboard</span>
+                    </a>
+                    <a href="profile.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">group</span>
+                        <span class="fw-semibold">Profile</span>
+                    </a>
+                    <hr>
+                    <a href="new.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">docs_add_on</span>
+                        <span class="fw-semibold">New</span>
+                    </a>
+                    <a href="open.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">article</span>
+                        <span class="fw-semibold">Open</span>
+                    </a>
+                    <a href="assigned.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">demography</span>
+                        <span class="fw-semibold">Assigned</span>
+                    </a>
+                    <a href="overdue.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">overview</span>
+                        <span class="fw-semibold">Overdue</span>
+                    </a>
+                    <a href="closed.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">task</span>
+                        <span class="fw-semibold">Closed</span>
+                    </a>
+                    <a href="trace.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">find_in_page</span>
+                        <span class="fw-semibold">Trace</span>
+                    </a>
+                    <a href="receive.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation</span>
+                        <span class="fw-semibold">Receive</span>
+                    </a>
+                    <a href="retrieve.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation_off</span>
+                        <span class="fw-semibold">Retrieve</span>
+                    </a>
+                    <hr>
+                    <a href="transactions.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">book_4</span>
+                        <span class="fw-semibold">Individual Transactions</span>
+                    </a>
+                    <hr>
+                    <a href="staff.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">groups</span>
+                        <span class="fw-semibold">Staff Members</span>
+                    </a>
+                    <a href="document-details.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">clarify</span>
+                        <span class="fw-semibold">Document Details</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="content">
+            <nav class="topbar">
+                <span class="material-symbols-outlined"><button type="button" onclick="toggleSidebar()"
+                        class="btn btn-outline-warning">&#xe5d2</button></span>
+                <h5>Document Tracking System</h5>
+                <span class="material-symbols-outlined"><button type="button"
+                        class="btn btn-outline-warning">&#xe51c</button></span>
+            </nav>
+            <main class="container-lg">
+                <div class="main-content">
+                    <h2 class="mb-4"><b>New Document</b></h2>
+
+                    <form class="d-flex flex-column gap-2" novalidate>
+                        <div>
+                            <label for="docType" class="required form-label"><b>Document Type: </b></label>
+                            <select id="docType" class="form-select" required>
+                                <option>Select an Option</option>
+                                <option>Report</option>
+                                <option>Memo</option>
+                                <option>Letter</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="action" class="required form-label"><b>Action to be Taken: </b></label>
+                            <select id="action" class="form-select" required>
+                                <option>Select an Option</option>
+                                <option>Review</option>
+                                <option>Approve</option>
+                                <option>Forward</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="title" class="required form-label"><b>Title: </b></label>
+                            <input type="text" id="title" class="form-control" placeholder="Write your Title" required>
+                        </div>
+
+                        <div>
+                            <label for="details" class="required form-label"><b>Details: </b></label>
+                            <div id="summernote"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning mt-2" id="form-submit">Submit</button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

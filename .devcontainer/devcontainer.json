@@ -4,7 +4,7 @@
   "name": "Bun",
   "dockerFile": "Dockerfile",
   "mounts": [
-    "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly" //ssh keys
+    "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/root/.ssh,readonly" //ssh keys
   ],
   // Configure tool-specific properties.
   "customizations": {
