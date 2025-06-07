@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents | Document Tracking System</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script defer src="js/bootstrap.bundle.min.js"></script>
+    <script defer src="js/sidenavbar.js"></script>
+    <script defer type="module" src="js/navbarData.js"></script>
+</head>
+
+<body>
+    <div class="page">
+        <div class="sidebar__wrapper sidebar-no-transition">
+            <nav class="sidebar">
+                <div class="sidebar__top">
+                    <img src="./static/Logo Banner.png" alt="banner" class="sidebar__banner">
+                    <div class="hamburger-mobile">
+                        <button type="button" onclick="toggleSidebar()"
+                            class="btn btn-outline-warning material-symbols-outlined">&#xe5d2</button>
+                    </div>
+                </div>
+                <hr>
+                <div class="profile">
+                    <img src="./static/Avatar.png" alt="avatar" class="profile__avatar">
+                    <div class="profile__info">
+                        <h4 class="fw-bold profile__name">&nbsp;</h4>
+                        <p class="fw-light profile__dept">&nbsp;</p>
+                    </div>
+                    <div class="profile__dropdown">▼</div>
+                </div>
+                <div class="navigation">
+                    <hr>
+                    <a href="dashboard.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">grid_view</span>
+                        <span class="fw-semibold">Dashboard</span>
+                    </a>
+                    <a href="profile.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">group</span>
+                        <span class="fw-semibold">Profile</span>
+                    </a>
+                    <hr>
+                    <a href="new.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">docs_add_on</span>
+                        <span class="fw-semibold">New</span>
+                    </a>
+                    <a href="open.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">article</span>
+                        <span class="fw-semibold">Open</span>
+                    </a>
+                    <a href="assigned.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">demography</span>
+                        <span class="fw-semibold">Assigned</span>
+                    </a>
+                    <a href="overdue.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">overview</span>
+                        <span class="fw-semibold">Overdue</span>
+                    </a>
+                    <a href="closed.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">task</span>
+                        <span class="fw-semibold">Closed</span>
+                    </a>
+                    <a href="trace.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">find_in_page</span>
+                        <span class="fw-semibold">Trace</span>
+                    </a>
+                    <a href="receive.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation</span>
+                        <span class="fw-semibold">Receive</span>
+                    </a>
+                    <a href="retrieve.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation_off</span>
+                        <span class="fw-semibold">Retrieve</span>
+                    </a>
+                    <hr>
+                    <a href="transactions.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">book_4</span>
+                        <span class="fw-semibold">Individual Transactions</span>
+                    </a>
+                    <hr>
+                    <a href="staff.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">groups</span>
+                        <span class="fw-semibold">Staff Members</span>
+                    </a>
+                    <a href="document-details.html" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">clarify</span>
+                        <span class="fw-semibold">Document Details</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="content">
+            <nav class="topbar">
+                <span class="material-symbols-outlined"><button type="button" onclick="toggleSidebar()"
+                        class="btn btn-outline-warning">&#xe5d2</button></span>
+                <h5>Document Tracking System</h5>
+                <span class="material-symbols-outlined"><button type="button"
+                        class="btn btn-outline-warning">&#xe51c</button></span>
+            </nav>
+            <main class="container-lg d-flex flex-column">
+                <h1 class="text-center mb-4"><b>Documents</b></h1>
+
+                <div class="d-flex flex-row gap-4 align-items-center mb-4">
+                    <input type="text" name="" id="" class="form-control form-control-lg"
+                        placeholder="Search Documents">
+                    <button class="btn btn-warning btn-lg">Search</button>
+                </div>
+
+                <div class="main-content flex-row justify-content-evenly flex-wrap">
+                    <div>
+                        <label for="dateRange" class="form-label">Date Range</label>
+                        <select class="form-select" name="dateRange" id="dateRange">
+                            <option value="">YYYY-MM-DD</option>
+                        </select>
+
+                        <!-- http://www.daterangepicker.com/ -->
+                    </div>
+                    <div>
+                        <label for="department" class="form-label">Department</label>
+                        <select name="department" id="department" class="form-select">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="any">Any</option>
+                            <option value="open">Open</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="assigned" class="form-label">Assigned to me</label>
+                        <select name="assigned" id="assigned" class="form-select">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sort" class="form-label">Sort By</label>
+                        <select name="sort" id="sort" class="form-select">
+                            <option value="date-asc">Created (Ascending)</option>
+                            <option value="date-dsc">Created (Descending)</option>
+                            <option value="date-dsc">Last Updated (Ascending)</option>
+                            <option value="date-dsc">Last Updated (Descending)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="entries" class="form-label">No. of Entries</label>
+                        <select name="entries" id="entries" class="form-select">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <h2><b>Search Results</b></h2>
+                    <div class="thread-item">
+                        <div class="thread-visible">
+                            <div>
+                                <div class="thread-top">
+                                    <h3>
+                                        <a href="#" class="thread-top__text">DOC202500001</a>
+                                    </h3>
+                                    <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Open</span>
+                                </div>
+                                <span>
+                                    Document name here
+                                </span>
+                            </div>
+                            <div class="profile__dropdown">
+                                <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#thread-collapse-1" aria-expanded="false"
+                                    aria-controls="thread-collapse-1">▼</button>
+                            </div>
+                        </div>
+                        <div class="thread-collapse collapse" id="thread-collapse-1">
+                            <hr>
+                            <div><b>Origin Department</b> <span>HR Department</span></div>
+                            <div><b>Document Type</b> <span>Request Letter</span></div>
+                            <div><b>Created By</b> <span>HR User 1 (HR Department)</span></div>
+                            <div><b>Currently Assigned To</b> <span>IT User 1 (IT Department)</span></div>
+                            <div><b>Signatory</b> <span>IT User 1 (IT Department)</span></div>
+                            <div><b>Last Updated At</b> <span>2025-06-06 09:17:23</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>
