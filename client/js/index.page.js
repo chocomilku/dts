@@ -5,9 +5,9 @@ import { API_URL } from "./constants.js";
     try {
         const res = await fetch(`${API_URL}/api/check`, { credentials: "include" });
         const redirected = statusRedirect(res, "replace");
-        if (!redirected) redirect("./dashboard.html", "replace");
+        if (!redirected) redirect("/dashboard.html", "replace");
 
     } catch (e) {
-        window.location.replace("./servererror.html");
+        window.location.replace("/servererror.html");
     }
 })();

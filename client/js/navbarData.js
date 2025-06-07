@@ -37,7 +37,7 @@ const loadUserData = async () => {
 
     } catch (e) {
         console.error(e);
-        window.location.replace("./servererror.html");
+        window.location.replace("/servererror.html");
     }
 }
 
