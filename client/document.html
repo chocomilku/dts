@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documents | Document Tracking System</title>
+    <title>Document | Document Tracking System</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <script defer src="/js/bootstrap.bundle.min.js"></script>
@@ -102,77 +102,78 @@
                         class="btn btn-outline-warning">&#xe51c</button></span>
             </nav>
             <main class="container-lg d-flex flex-column">
-                <h1 class="text-center mb-4"><b>Documents</b></h1>
+                <h1 class="text-center mb-4"><b>Document Detail</b></h1>
 
-                <div class="d-flex flex-row gap-4 align-items-center mb-4">
-                    <input type="text" name="" id="" class="form-control form-control-lg"
-                        placeholder="Search Documents">
-                    <button class="btn btn-warning btn-lg">Search</button>
+                <div class="main-content hr-no-margin">
+                    <div class="d-flex flex-row gap-2 align-items-center">
+                        <h5><b>DOC202500001</b></h5>
+                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Open</span>
+                    </div>
+                    <h2><b>Document Name Here</b></h2>
+                    <p class="mb-0">Lorem ipsum dolor sit amet consectetur adipisicing elit. Nesciunt odit id quis
+                        facere rem
+                        incidunt numquam enim adipisci eum eius assumenda, natus nobis amet qui aliquid! Autem molestiae
+                        quisquam officiis?</p>
+                    <hr>
+                    <div class="thread-collapse">
+                        <div><b>Origin Department</b> <span>HR Department</span></div>
+                        <div><b>Document Type</b> <span>Request Letter</span></div>
+                        <div><b>Created By</b> <span>HR User 1 (HR Department)</span></div>
+                        <div><b>Currently Assigned To</b> <span>IT User 1 (IT Department)</span></div>
+                        <div><b>Signatory</b> <span>IT User 1 (IT Department)</span></div>
+                        <div><b>Last Updated At</b> <span>2025-06-06 09:17:23</span></div>
+                    </div>
                 </div>
 
-                <div class="main-content flex-row justify-content-evenly flex-wrap">
-                    <div>
-                        <label for="dateRange" class="form-label">Date Range</label>
-                        <select class="form-select" name="dateRange" id="dateRange">
-                            <option value="">YYYY-MM-DD</option>
-                        </select>
+                <div class="main-content hr-no-margin">
+                    <h4><b>Document Actions</b></h4>
+                    <div class="d-flex flex-row gap-2">
+                        <button class="btn btn-danger">Close</button>
+                        <button class="btn btn-warning">Edit</button>
+                        <button class="btn btn-info">Print</button>
+                    </div>
+                    <hr>
+                    <form class="d-flex flex-column gap-2" id="action-form" novalidate>
+                        <div>
+                            <label for="actionType" class="form-label">Action Type</label>
+                            <select name="actionType" id="actionType" class="form-select">
+                                <option value="note">Post Note</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="assign">Assign</option>
+                                <option value="approve">Approve</option>
+                                <option value="deny">Deny</option>
+                            </select>
+                        </div>
 
-                        <!-- http://www.daterangepicker.com/ -->
-                    </div>
-                    <div>
-                        <label for="department" class="form-label">Department</label>
-                        <select name="department" id="department" class="form-select">
-                            <option value="all">All</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-select">
-                            <option value="any">Any</option>
-                            <option value="open">Open</option>
-                            <option value="closed">Closed</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="assigned" class="form-label">Assigned to me</label>
-                        <select name="assigned" id="assigned" class="form-select">
-                            <option value="no">No</option>
-                            <option value="yes">Yes</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="sort" class="form-label">Sort By</label>
-                        <select name="sort" id="sort" class="form-select">
-                            <option value="date-asc">Created (Ascending)</option>
-                            <option value="date-dsc">Created (Descending)</option>
-                            <option value="date-dsc">Last Updated (Ascending)</option>
-                            <option value="date-dsc">Last Updated (Descending)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="entries" class="form-label">No. of Entries</label>
-                        <select name="entries" id="entries" class="form-select">
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label for="department" class="form-label">Department to transfer</label>
+                            <select name="department" id="department" class="form-select">
+                                <option value="">IT Department</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="details" class="form-label">Additional Details</label>
+                            <textarea name="details" id="details" class="form-control"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="form-submit">Submit</button>
+                    </form>
                 </div>
 
                 <div class="main-content">
-                    <h2><b>Search Results</b></h2>
+                    <h2><b>Document Thread</b> <span class="fs-6">(Latest status on Top)</span></h2>
                     <div class="thread-item">
                         <div class="thread-visible">
                             <div>
                                 <div class="thread-top">
-                                    <h3>
-                                        <a href="/documents/1" class="thread-top__text">DOC202500001 <span
-                                                class="badge bg-success-subtle text-success-emphasis rounded-pill fs-6">Open</span></a>
-                                    </h3>
+                                    <h4 class="thread-top__text">2025-06-06 09:19:10 — HR Department
+                                        <span
+                                            class="badge bg-success-subtle text-success-emphasis rounded-pill fs-6">Created</span>
+                                    </h4>
                                 </div>
                                 <span>
-                                    Document name here
+                                    Document has been created by HR user 1
                                 </span>
                             </div>
                             <div class="profile__dropdown">
@@ -192,7 +193,6 @@
                         </div>
                     </div>
                 </div>
-
             </main>
         </div>
     </div>

@@ -192,6 +192,10 @@ body {
     gap: 1rem;
 }
 
+.hr-no-margin hr {
+    margin: 0;
+}
+
 label.required::after {
     content: "*";
     color: var(--bs-danger);
@@ -205,7 +209,7 @@ label.required::after {
 
 .thread-visible {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 0.05fr;
 }
 
 .thread-top {

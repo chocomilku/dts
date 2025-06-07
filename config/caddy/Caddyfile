@@ -1,6 +1,7 @@
 :80 {
 	root * /srv/
-	reverse_proxy /api/* http://dts-server:54321
+
+	rewrite /documents/* document.html
 
 	@stripExtensions path_regexp strip (.*)\.(html)
 	redir @stripExtensions {re.strip.1} 301
@@ -11,12 +12,16 @@
 		hide .git
 	}
 
+	reverse_proxy /api/* http://dts-server:54321
+
 	handle_errors {
 		@404 {
 			expression {http.error.status_code} == 404
 		}
 		rewrite @404 /notfound.html
-		file_server
+		file_server {
+			hide .git
+		}
 	}
 
 	log {
