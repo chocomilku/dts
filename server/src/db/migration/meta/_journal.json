@@ -50,6 +50,20 @@
       "when": 1749365087216,
       "tag": "0006_add_doc_type",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1749374427834,
+      "tag": "0007_add_doc_assigned",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1749374503948,
+      "tag": "0008_assigned_references",
+      "breakpoints": true
     }
   ]
 }

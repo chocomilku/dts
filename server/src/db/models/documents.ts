@@ -3,6 +3,7 @@ import { sqliteTable, int, text } from "drizzle-orm/sqlite-core";
 import { users } from "./users";
 import { z } from "zod";
 import { emptyString } from "@utils/emptyString";
+import { departments } from "./departments";
 
 export const documents = sqliteTable("documents", {
 	id: int().primaryKey({ autoIncrement: true }),
@@ -17,6 +18,8 @@ export const documents = sqliteTable("documents", {
 	author: int()
 		.references(() => users.id)
 		.notNull(),
+	assignedUser: int().references(() => users.id),
+	assignedDepartment: int().references(() => departments.id),
 	createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
 	lastUpdatedAt: text().default(sql`(CURRENT_TIMESTAMP)`),
 });

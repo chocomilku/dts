@@ -3,6 +3,7 @@ import { sqliteTable, int, text } from "drizzle-orm/sqlite-core";
 import { users } from "./users";
 import { documents } from "./documents";
 import { departments } from "./departments";
+import { z } from "zod";
 
 export const documentLogs = sqliteTable("documentLogs", {
 	id: int().primaryKey({ autoIncrement: true }),
@@ -32,4 +33,20 @@ export const documentLogs = sqliteTable("documentLogs", {
 	logMessage: text().notNull(),
 	additionalDetails: text(),
 	timestamp: text().default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const zDocumentLogs = z.object({
+	action: z.enum([
+		// created only available through POST /documents
+		// closed only available through PATCH /documents/:id/status
+		"note",
+		"transfer",
+		"recieve",
+		"assign",
+		"approve", // add check to limit only to signatory
+		"deny",
+	]),
+	recipient: z.coerce.number().optional(),
+	recipientType: z.enum(["user", "dept"]).optional(),
+	additionalDetails: z.string().optional(),
 });
