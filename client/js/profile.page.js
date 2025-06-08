@@ -1,26 +1,13 @@
 import { API_URL } from "./constants.js";
+import { getUserData } from "./navbarData.js";
 import { statusRedirect } from "./statusRedirect.js";
 
 const loadUserData = async () => {
     try {
-        const resUserMe = await fetch(`${API_URL}/api/users/@me`, { credentials: "include" })
         const resDepts = await fetch(`${API_URL}/api/departments`)
-        if (statusRedirect(resUserMe, "href")) return;
         if (statusRedirect(resDepts, "href")) return;
 
-        /**
-         * @type {{message: string, data: {
-        * department: {
-        *  id: number;
-        *  name: string} | null;
-        * id: number;
-        * role: "superadmin" | "admin" | "clerk" | "officer";
-        * name: string;
-        * username: string;
-        * createdAt: string | null;
-        * }[]}}
-        */
-        const user = await resUserMe.json();
+        const user = await getUserData();
 
         /**
          * @type {{
@@ -32,15 +19,12 @@ const loadUserData = async () => {
          * }
          */
         const departments = await resDepts.json();
-        console.log(user)
-        console.log(departments);
 
         const idElem = document.getElementById('userId')
         const nameElem = document.getElementById('name')
         const roleElem = document.getElementById('role') //HTMLSelectElement
         const deptElem = document.getElementById('department')
         const userElem = document.getElementById('username')
-        const passElem = document.getElementById('password')
 
 
         if (!deptElem) return;
@@ -60,15 +44,15 @@ const loadUserData = async () => {
             const e = el.element
             if (!e) return;
             if (e instanceof HTMLInputElement) {
-                e.value = user.data[0][el.key]
+                e.value = user[el.key]
             }
 
             if (e instanceof HTMLSelectElement) {
-                e.value = user.data[0][el.key]
+                e.value = user[el.key]
             }
         })
 
-        if (user.data[0].role != "superadmin") {
+        if (user.role != "superadmin") {
             const restrictFields = [roleElem, deptElem, userElem, idElem]
             restrictFields.forEach((e) => {
                 if (!e) return;
