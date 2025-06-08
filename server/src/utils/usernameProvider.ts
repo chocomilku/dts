@@ -9,9 +9,9 @@ export const usernameProvider = async () => {
 	);
 	const res = query.get() as { seq: number };
 
-	const AREA_CODE = "MNL";
+	const PREFIX = "MNL";
 	const year = new Date().getFullYear().toString().slice(-2);
-	const sequenceId = (res.seq + 1).toString().padStart(4, "0");
+	const sequenceId = ((res.seq ?? 0) + 1).toString().padStart(4, "0");
 
-	return `${AREA_CODE}${year}-${sequenceId}`;
+	return `${PREFIX}${year}-${sequenceId}`;
 };

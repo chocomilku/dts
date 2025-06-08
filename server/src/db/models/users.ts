@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { departments } from "./departments";
 import { z } from "zod";
+import { emptyString } from "@utils/emptyString";
 
 export const users = sqliteTable("users", {
 	id: int().primaryKey({ autoIncrement: true }),
@@ -17,7 +18,7 @@ export const users = sqliteTable("users", {
 
 export const zUsers = z.object({
 	role: z.enum(["superadmin", "admin", "clerk", "officer"]),
-	name: z.preprocess((val) => (val === "" ? undefined : val), z.string()),
+	name: z.preprocess(emptyString, z.string()),
 	departmentId: z.coerce.number(),
 	password: z.string(),
 });

@@ -9,6 +9,7 @@ import { documentLogs } from "./models/documentLog";
 
 const dbPath = path.join(__dirname, "..", "..", "..", "database/", "db.sqlite");
 const sqliteProvider = new Database(dbPath);
+
 const db = drizzle({
 	client: sqliteProvider,
 	schema: { ...users, ...departments, ...documents, ...documentLogs },

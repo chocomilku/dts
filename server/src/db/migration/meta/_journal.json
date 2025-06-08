@@ -36,6 +36,20 @@
       "when": 1749359449871,
       "tag": "0004_document_related_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1749363727634,
+      "tag": "0005_not_null_and_doclog_add_cols",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1749365087216,
+      "tag": "0006_add_doc_type",
+      "breakpoints": true
     }
   ]
 }
