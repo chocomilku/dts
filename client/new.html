@@ -8,11 +8,14 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/summernote-bs5.min.css">
+    <link rel="stylesheet" href="/css/select2.min.css">
+    <link rel="stylesheet" href="/css/select2-bootstrap-5-theme.min.css">
     <script defer src="/js/jquery-3.7.1.min.js"></script>
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/summernote-bs5.min.js"></script>
+    <script defer src="/js/select2.min.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
-    <script defer src="/js/new.page.js"></script>
+    <script defer type="module" src="/js/new.page.js"></script>
 </head>
 
 <body>
@@ -94,31 +97,22 @@
             <main class="container-lg">
                 <div class="main-content">
                     <h2 class="mb-4"><b>New Document</b></h2>
+                    <div id="alert-placeholder"></div>
 
-                    <form class="d-flex flex-column gap-2" novalidate>
-                        <div>
-                            <label for="docType" class="required form-label"><b>Document Type: </b></label>
-                            <select id="docType" class="form-select" required>
-                                <option>Select an Option</option>
-                                <option>Report</option>
-                                <option>Memo</option>
-                                <option>Letter</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="action" class="required form-label"><b>Action to be Taken: </b></label>
-                            <select id="action" class="form-select" required>
-                                <option>Select an Option</option>
-                                <option>Review</option>
-                                <option>Approve</option>
-                                <option>Forward</option>
-                            </select>
-                        </div>
-
+                    <form class="d-flex flex-column gap-2" id="new-doc-form">
                         <div>
                             <label for="title" class="required form-label"><b>Title: </b></label>
                             <input type="text" id="title" class="form-control" placeholder="Write your Title" required>
+                        </div>
+
+                        <div>
+                            <label for="docType" class="required form-label"><b>Document Type: </b></label>
+                            <select id="docType" class="form-select" required></select>
+                        </div>
+
+                        <div>
+                            <label for="signatory" class="required form-label"><b>Signatory</b></label>
+                            <select id="signatory" class="form-select" required></select>
                         </div>
 
                         <div>

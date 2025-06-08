@@ -4,7 +4,7 @@ import { statusRedirect } from "./statusRedirect.js";
 
 const loadUserData = async () => {
     try {
-        const resDepts = await fetch(`${API_URL}/api/departments`)
+        const resDepts = await fetch(`${API_URL}/api/departments`, { credentials: "include" })
         if (statusRedirect(resDepts, "href")) return;
 
         const user = await getUserData();
