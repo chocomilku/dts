@@ -1,4 +1,5 @@
 import { API_URL } from "./constants.js";
+import { getUserData } from "./navbarData.js";
 import { statusRedirect } from "./statusRedirect.js";
 
 const loadDepartments = async () => {
@@ -44,6 +45,16 @@ const loadDepartments = async () => {
     } catch (e) {
         console.error(e);
         window.location.replace("/servererror");
+    }
+}
+
+const checkRole = async () => {
+    const user = await getUserData();
+    if (user.role != "superadmin") {
+        const addDeptButton = document.getElementById("addDeptButton");
+        if (addDeptButton) addDeptButton.remove();
+        const newDeptModal = document.getElementById("newDeptModal");
+        if (newDeptModal) newDeptModal.remove();
     }
 }
 
@@ -118,3 +129,4 @@ const formHandling = async () => {
 
 document.addEventListener("DOMContentLoaded", loadDepartments);
 document.addEventListener("DOMContentLoaded", formHandling);
+document.addEventListener("DOMContentLoaded", checkRole);

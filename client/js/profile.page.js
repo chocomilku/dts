@@ -38,6 +38,7 @@ const loadUserData = async () => {
             deptElem.add(element);
         })
 
+
         const autoFields = [{ key: "name", element: nameElem }, { key: "role", element: roleElem }, { key: "username", element: userElem }, { key: "id", element: idElem }]
 
         autoFields.forEach((el) => {
@@ -51,6 +52,8 @@ const loadUserData = async () => {
                 e.value = user[el.key]
             }
         })
+
+        deptElem.value = user.department?.id !== undefined ? user.department.id.toString() : "";
 
         if (user.role != "superadmin") {
             const restrictFields = [roleElem, deptElem, userElem, idElem]
