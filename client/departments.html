@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments | Document Tracking System</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/js/bootstrap.bundle.min.js"></script>
+    <script defer src="/js/sidenavbar.js"></script>
+    <script defer type="module" src="/js/navbarData.js"></script>
+    <script defer type="module" src="/js/departments.page.js"></script>
+</head>
+
+<body>
+    <div class="page">
+        <div class="sidebar__wrapper sidebar-no-transition">
+            <nav class="sidebar">
+                <div class="sidebar__top">
+                    <img src="/static/Logo Banner.png" alt="banner" class="sidebar__banner">
+                    <div class="hamburger-mobile">
+                        <button type="button" onclick="toggleSidebar()"
+                            class="btn btn-outline-warning material-symbols-outlined">&#xe5d2</button>
+                    </div>
+                </div>
+                <hr>
+                <div class="profile">
+                    <img src="/static/Avatar.png" alt="avatar" class="profile__avatar">
+                    <div class="profile__info">
+                        <h4 class="fw-bold profile__name">&nbsp;</h4>
+                        <p class="fw-light profile__dept">&nbsp;</p>
+                    </div>
+                    <div class="profile__dropdown">▼</div>
+                </div>
+                <div class="navigation">
+                    <hr>
+                    <a href="/dashboard" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">grid_view</span>
+                        <span class="fw-semibold">Dashboard</span>
+                    </a>
+                    <a href="/profile" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">group</span>
+                        <span class="fw-semibold">Profile</span>
+                    </a>
+                    <hr>
+                    <a href="/new" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">docs_add_on</span>
+                        <span class="fw-semibold">New Document</span>
+                    </a>
+                    <a href="/documents" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">article</span>
+                        <span class="fw-semibold">Documents</span>
+                    </a>
+                    <a href="/documents?assigned=yes" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">demography</span>
+                        <span class="fw-semibold">Assigned to me</span>
+                    </a>
+                    <a href="/documents?overdue=yes" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">overview</span>
+                        <span class="fw-semibold">Overdue</span>
+                    </a>
+                    <a href="/receive" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation</span>
+                        <span class="fw-semibold">Receive</span>
+                    </a>
+                    <a href="/retrieve" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">approval_delegation_off</span>
+                        <span class="fw-semibold">Retrieve</span>
+                    </a>
+                    <hr>
+                    <a href="/departments" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">supervisor_account</span>
+                        <span class="fw-semibold">Departments</span>
+                    </a>
+                    <a href="/staff" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">groups</span>
+                        <span class="fw-semibold">Staff Members</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="content">
+            <nav class="topbar">
+                <span class="material-symbols-outlined"><button type="button" onclick="toggleSidebar()"
+                        class="btn btn-outline-warning">&#xe5d2</button></span>
+                <h5>Document Tracking System</h5>
+                <span class="material-symbols-outlined"><button type="button"
+                        class="btn btn-outline-warning">&#xe51c</button></span>
+            </nav>
+            <main class="container-lg d-flex flex-column">
+                <h1 class="text-center mb-4"><b>Departments</b></h1>
+
+                <div class="main-content">
+                    <div class="d-flex flex-row gap-2 align-items-center">
+                        <h2><b>Department List</b></h2>
+                        <button class="btn btn-sm btn-primary material-symbols-outlined" data-bs-toggle="modal"
+                            data-bs-target="#newDeptModal" id="addDeptButton">
+                            add
+                        </button>
+                    </div>
+
+                </div>
+
+            </main>
+            <div class="modal fade" id="newDeptModal" tabindex="-1" aria-labelledby="newDeptModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="newDeptModalLabel">New Department</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="new-dept-form" novalidate>
+                            <div class="modal-body">
+                                <div>
+                                    <label for="name" class="form-label required">Department Name</label>
+                                    <input type="text" name="name" id="name" class="form-control" required>
+                                    <div id="name-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success" id="form-submit">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,3 +1,4 @@
+import { emptyString } from "@utils/emptyString";
 import { sql } from "drizzle-orm";
 import { sqliteTable, int, text } from "drizzle-orm/sqlite-core";
 import { z } from "zod";
@@ -9,5 +10,5 @@ export const departments = sqliteTable("departments", {
 });
 
 export const zDepartments = z.object({
-	name: z.string(),
+	name: z.preprocess(emptyString, z.string()),
 });

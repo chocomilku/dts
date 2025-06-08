@@ -7,7 +7,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { SQLiteError } from "bun:sqlite";
 import { sessionAuth } from "@middlewares/sessionAuth";
-import { getTableColumns } from "drizzle-orm";
+import { desc, getTableColumns } from "drizzle-orm";
 
 const departmentRouter = new Hono();
 
@@ -16,7 +16,10 @@ departmentRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
 		const { createdAt, ...deptsRest } = getTableColumns(departmentsModel);
 
-		const data = await db.select({ ...deptsRest }).from(departmentsModel);
+		const data = await db
+			.select({ ...deptsRest })
+			.from(departmentsModel)
+			.orderBy(desc(departmentsModel.id));
 
 		c.status(200);
 		return c.json({ message: "OK", data });
