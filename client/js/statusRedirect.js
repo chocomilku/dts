@@ -12,16 +12,16 @@ const statusRedirect = (res, redirectType) => {
 
     switch (res.status) {
         case 401:
-            redirect("/login.html", redirectType)
+            redirect("/login", redirectType)
             return true;
         case 403:
-            redirect("/forbidden.html", redirectType)
+            redirect("/forbidden", redirectType)
             return true;
         case 404:
-            redirect("/notfound.html", redirectType)
+            redirect("/notfound", redirectType)
             return true;
         case 500:
-            redirect("/servererror.html", redirectType)
+            redirect("/servererror", redirectType)
             return true;
         default:
             return false;

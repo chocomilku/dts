@@ -25,6 +25,6 @@
 	}
 
 	log {
-		output file /var/log/caddy/my-static-site.log
+		output file /var/log/caddy/site.log
 	}
 }

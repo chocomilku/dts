@@ -68,7 +68,7 @@ import { redirect } from "./statusRedirect.js"
                 } else {
                     btn.disabled = true;
                     btn.innerHTML = data.message;
-                    redirect("/dashboard.html", "replace");
+                    redirect("/dashboard", "replace");
                 }
 
             }
