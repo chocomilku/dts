@@ -202,7 +202,7 @@ const submitHandling = async () => {
         const res = await fetch(`${API_URL}/api/documents`, {
             method: "POST",
             body: new URLSearchParams({
-                title: titleValue,
+                title: titleValue.value,
                 type: docTypeValue,
                 details: detailsValue,
                 signatory: signatoryValue

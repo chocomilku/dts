@@ -1,5 +1,5 @@
 import { API_URL } from "./constants.js";
-import { getUserData } from "./navbarData.js";
+import { getUserData } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
 const loadUserData = async () => {

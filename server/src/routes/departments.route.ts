@@ -7,9 +7,60 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { SQLiteError } from "bun:sqlite";
 import { sessionAuth } from "@middlewares/sessionAuth";
-import { desc, getTableColumns } from "drizzle-orm";
+import { desc, getTableColumns, eq } from "drizzle-orm";
+import { z } from "zod";
 
 const departmentRouter = new Hono();
+
+//#region department:id - GET
+/**
+ * Get a specific department by its ID.
+ *
+ * @route GET /:id
+ * @access Authenticated users (any role)
+ * @param {number} id - Department ID (URL parameter)
+ * @returns {object} 200 - Department data
+ * @returns {object} 404 - Department not found
+ * @returns {object} 400 - Invalid ID
+ * @returns {object} 500 - Internal Server Error
+ */
+departmentRouter.get("/:id", sessionAuth("any"), async (c) => {
+	try {
+		const { id } = c.req.param();
+		const querySchema = z.object({
+			id: z.coerce.number().int().positive(),
+		});
+
+		const parsedData = querySchema.safeParse({ id });
+
+		if (!parsedData.success) {
+			c.status(400);
+			return c.json(parsedData.error);
+		}
+
+		const safeId = parsedData.data.id;
+		const { createdAt, ...deptsRest } = getTableColumns(departmentsModel);
+
+		const data = await db
+			.select({ ...deptsRest })
+			.from(departmentsModel)
+			.where(eq(departmentsModel.id, safeId))
+			.limit(1);
+
+		if (data.length !== 1) {
+			c.status(404);
+			return c.json({ message: "Department not found." });
+		}
+
+		c.status(200);
+		return c.json({ message: "OK", data });
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+//#endregion
 
 //#region departments - GET ALL
 departmentRouter.get("/", sessionAuth("any"), async (c) => {

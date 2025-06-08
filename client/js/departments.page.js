@@ -1,5 +1,5 @@
 import { API_URL } from "./constants.js";
-import { getUserData } from "./navbarData.js";
+import { getUserData } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
 const loadDepartments = async () => {
@@ -49,7 +49,7 @@ const loadDepartments = async () => {
 }
 
 const checkRole = async () => {
-    const user = await getUserData();
+    const user = await getUserData("@me");
     if (user.role != "superadmin") {
         const addDeptButton = document.getElementById("addDeptButton");
         if (addDeptButton) addDeptButton.remove();

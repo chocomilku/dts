@@ -10,6 +10,7 @@
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/sidenavbar.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
+    <script defer type="module" src="/js/document.page.js"></script>
 </head>
 
 <body>
@@ -93,22 +94,14 @@
 
                 <div class="main-content hr-no-margin">
                     <div class="d-flex flex-row gap-2 align-items-center">
-                        <h5><b>DOC202500001</b></h5>
+                        <h5><b id="docTrackingNumber">&nbsp;</b></h5>
                         <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Open</span>
                     </div>
-                    <h2><b>Document Name Here</b></h2>
-                    <p class="mb-0">Lorem ipsum dolor sit amet consectetur adipisicing elit. Nesciunt odit id quis
-                        facere rem
-                        incidunt numquam enim adipisci eum eius assumenda, natus nobis amet qui aliquid! Autem molestiae
-                        quisquam officiis?</p>
+                    <h2><b id="docTitle">&nbsp;</b></h2>
+                    <p class="mb-0" id="docDetails">&nbsp;</p>
                     <hr>
-                    <div class="thread-collapse">
-                        <div><b>Origin Department</b> <span>HR Department</span></div>
-                        <div><b>Document Type</b> <span>Request Letter</span></div>
-                        <div><b>Created By</b> <span>HR User 1 (HR Department)</span></div>
-                        <div><b>Currently Assigned To</b> <span>IT User 1 (IT Department)</span></div>
-                        <div><b>Signatory</b> <span>IT User 1 (IT Department)</span></div>
-                        <div><b>Last Updated At</b> <span>2025-06-06 09:17:23</span></div>
+                    <div class="thread-collapse" id="docAttributes">
+                        &nbsp;
                     </div>
                 </div>
 
