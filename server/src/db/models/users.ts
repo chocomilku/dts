@@ -7,7 +7,9 @@ export const users = sqliteTable("users", {
 	id: int().primaryKey({ autoIncrement: true }),
 	role: text({ enum: ["superadmin", "admin", "clerk", "officer"] }).notNull(),
 	name: text().notNull(),
-	departmentId: int().references(() => departments.id),
+	departmentId: int()
+		.references(() => departments.id)
+		.notNull(),
 	username: text().notNull().unique(),
 	password: text().notNull(),
 	createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),

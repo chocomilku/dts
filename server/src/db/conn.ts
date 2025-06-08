@@ -4,12 +4,14 @@ import path from "path";
 
 import { users } from "./models/users";
 import { departments } from "./models/departments";
+import { documents } from "./models/documents";
+import { documentLogs } from "./models/documentLog";
 
 const dbPath = path.join(__dirname, "..", "..", "..", "database/", "db.sqlite");
 const sqliteProvider = new Database(dbPath);
 const db = drizzle({
 	client: sqliteProvider,
-	schema: { ...users, ...departments },
+	schema: { ...users, ...departments, ...documents, ...documentLogs },
 });
 
 export { dbPath, db, sqliteProvider };

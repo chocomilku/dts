@@ -29,6 +29,13 @@
       "when": 1748927337402,
       "tag": "0003_remove_user_bday",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1749359449871,
+      "tag": "0004_document_related_tables",
+      "breakpoints": true
     }
   ]
 }
