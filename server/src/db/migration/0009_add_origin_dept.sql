@@ -1,0 +1,1 @@
+ALTER TABLE `documents` ADD `originDepartment` integer REFERENCES departments(id);

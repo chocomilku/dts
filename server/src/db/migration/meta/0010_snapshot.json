@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3c6aebc8-8f8d-415d-9b4a-f9b84e354202",
-  "prevId": "b430e2c1-4c7d-4df2-aa3c-2290f740f874",
+  "id": "86c97f32-3e97-48b7-8813-1cf4ac0f3ba9",
+  "prevId": "3c6aebc8-8f8d-415d-9b4a-f9b84e354202",
   "tables": {
     "departments": {
       "name": "departments",
@@ -228,7 +228,7 @@
           "name": "originDepartment",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "assignedUser": {

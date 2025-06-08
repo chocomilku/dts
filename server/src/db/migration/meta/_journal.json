@@ -68,8 +68,15 @@
     {
       "idx": 9,
       "version": "6",
-      "when": 1749388574891,
-      "tag": "0009_add_reopen_action",
+      "when": 1749392562734,
+      "tag": "0009_add_origin_dept",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1749392756707,
+      "tag": "0010_not_null_origindept",
       "breakpoints": true
     }
   ]

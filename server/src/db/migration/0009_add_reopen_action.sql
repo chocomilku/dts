@@ -1,1 +1,0 @@
-ALTER TABLE `documents` ADD `originDepartment` integer NOT NULL REFERENCES departments(id);
