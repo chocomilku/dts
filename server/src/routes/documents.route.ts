@@ -2,7 +2,11 @@ import { SQLiteError } from "bun:sqlite";
 import { Hono } from "hono";
 import { sessionAuth } from "@middlewares/sessionAuth";
 import { zValidator } from "@hono/zod-validator";
-import { documents as documentsModel, zDocuments } from "@db/models/documents";
+import {
+	documents as documentsModel,
+	zDocuments,
+	zDocumentsStatus,
+} from "@db/models/documents";
 import { db } from "@db/conn";
 import { trackingNumberProvider } from "@utils/trackingNumberProvider";
 import { eq, getTableColumns, desc, sql } from "drizzle-orm";
@@ -165,10 +169,10 @@ documentRouter.post(
 			}
 
 			// document
-			const { id, signatory, assignedUser, assignedDepartment } =
+			const { id, signatory, assignedUser, assignedDepartment, status } =
 				getTableColumns(documentsModel);
 			const doc = await db
-				.select({ id, signatory, assignedUser, assignedDepartment })
+				.select({ id, signatory, assignedUser, assignedDepartment, status })
 				.from(documentsModel)
 				.where(eq(documentsModel.trackingNumber, trackingNumber))
 				.limit(1);
@@ -176,6 +180,13 @@ documentRouter.post(
 			if (doc.length != 1) {
 				c.status(404);
 				return c.json({ message: "Document not found." });
+			}
+
+			if (doc[0].status == "closed") {
+				c.status(409);
+				return c.json({
+					message: "Document is already closed and cannot be edited.",
+				});
 			}
 
 			// permission checks
@@ -231,6 +242,7 @@ documentRouter.post(
 			 *
 			 * created - author (docAuthor) [assignDept -> null, assignUser -> docAuthor]
 			 * closed -  author (docAuthor) [assignDept -> null, assignUser -> null]
+			 * reopen - author (author) [assignDept -> null, assignUser -> docAuthor]
 			 * approve - author (assigned && signatory) [no update]
 			 * deny - author (assigned && signatory) [no update]
 			 * note - author (assigned) [no update]
@@ -240,8 +252,8 @@ documentRouter.post(
 			 */
 
 			// for doc
-			let assignUser: number | undefined | null = null;
-			let assignDept: number | undefined | null = null;
+			let assignUser: number | undefined | null = undefined;
+			let assignDept: number | undefined | null = undefined;
 
 			switch (form.action) {
 				case "approve":
@@ -271,8 +283,8 @@ documentRouter.post(
 					assignDept = null;
 					break;
 				default:
-					assignUser = null;
-					assignDept = null;
+					assignUser = undefined;
+					assignDept = undefined;
 			}
 
 			const logMessage = logMessageProvider(
@@ -352,6 +364,121 @@ documentRouter.get("/:tn", sessionAuth("any"), async (c) => {
 
 //#endregion
 
+//#region document:id - PATCH
+documentRouter.patch(
+	"/:tn",
+	sessionAuth("any"),
+	zValidator("form", zDocumentsStatus),
+	async (c) => {
+		try {
+			const form = c.req.valid("form");
+			const authorId = c.get("userId");
+			const { tn } = c.req.param();
+
+			const paramSchema = z.preprocess(emptyString, z.coerce.string());
+			const parseData = paramSchema.safeParse(tn);
+			if (!parseData.success) {
+				c.status(400);
+				return c.json(parseData.error);
+			}
+
+			const trackingNumber = parseData.data;
+
+			// author
+			const {
+				id: userId,
+				name,
+				departmentId,
+				role,
+			} = getTableColumns(usersModel);
+			const authorData = await db
+				.select({ id: userId, name, departmentId, role })
+				.from(usersModel)
+				.where(eq(usersModel.id, authorId))
+				.limit(1);
+
+			if (authorData.length != 1) {
+				c.status(404);
+				return c.json({ message: "Author not found." });
+			}
+
+			// doc
+			const {
+				id: docId,
+				signatory,
+				status,
+				author,
+			} = getTableColumns(documentsModel);
+			const doc = await db
+				.select({ id: docId, signatory, status, author })
+				.from(documentsModel)
+				.where(eq(documentsModel.trackingNumber, trackingNumber))
+				.limit(1);
+
+			if (doc.length != 1) {
+				c.status(404);
+				return c.json({ message: "Document not found." });
+			}
+
+			// close: signatory, superadmin, docAuthor
+			// open: superadmin, docAuthor
+
+			if (
+				(form.status == "open" && doc[0].status == "open") ||
+				(form.status == "closed" && doc[0].status == "closed")
+			) {
+				c.status(204);
+				return c.json({});
+			}
+
+			const isSignatory = authorId == doc[0].signatory;
+			const isDocAuthor = doc[0].author == authorId;
+			const isSuperAdmin = authorData[0].role == "superadmin";
+
+			if (form.status == "closed") {
+				if (!isSignatory && !isDocAuthor && !isSuperAdmin) {
+					c.status(403);
+					return c.json({ message: "Insufficient permissions" });
+				}
+			}
+
+			if (form.status == "open") {
+				if (!isDocAuthor && !isSuperAdmin) {
+					c.status(403);
+					return c.json({ message: "Insufficient permissions" });
+				}
+			}
+
+			await db.insert(documentLogsModel).values({
+				document: doc[0].id,
+				location: authorData[0].departmentId,
+				author: authorId,
+				action: form.status == "closed" ? "closed" : "reopen",
+				logMessage: logMessageProvider(
+					form.status == "closed" ? "closed" : "reopen",
+					authorData[0].name
+				),
+				additionalDetails: form.additionalDetails,
+			});
+
+			await db.update(documentsModel).set({
+				lastUpdatedAt: sql`(CURRENT_TIMESTAMP)`,
+				assignedDepartment: null,
+				assignedUser: null,
+				status: form.status,
+			});
+
+			c.status(204);
+			return c.json({});
+		} catch (e) {
+			console.error(e);
+			c.status(500);
+			return c.json({ message: "Internal Server Error" });
+		}
+	}
+);
+//#endregion
+
 //#region document - POST
 documentRouter.post(
 	"/",
@@ -385,6 +512,7 @@ documentRouter.post(
 					details: form.details,
 					signatory: form.signatory,
 					author: authorId,
+					originDepartment: userData[0].departmentId,
 					assignedUser: authorId,
 					assignedDepartment: null,
 				})

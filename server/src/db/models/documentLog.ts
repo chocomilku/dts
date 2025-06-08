@@ -22,6 +22,7 @@ export const documentLogs = sqliteTable("documentLogs", {
 		enum: [
 			"created",
 			"closed",
+			"reopen",
 			"note",
 			"transfer",
 			"recieve",
@@ -39,6 +40,7 @@ export const zDocumentLogs = z.object({
 	action: z.enum([
 		// created only available through POST /documents
 		// closed only available through PATCH /documents/:id/status
+		// reopen only available through PATCH /documents/:id/status
 		"note",
 		"transfer",
 		"recieve",

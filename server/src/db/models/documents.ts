@@ -18,6 +18,9 @@ export const documents = sqliteTable("documents", {
 	author: int()
 		.references(() => users.id)
 		.notNull(),
+	originDepartment: int()
+		.references(() => departments.id)
+		.notNull(),
 	assignedUser: int().references(() => users.id),
 	assignedDepartment: int().references(() => departments.id),
 	createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
@@ -29,4 +32,9 @@ export const zDocuments = z.object({
 	type: z.preprocess(emptyString, z.string()),
 	details: z.preprocess(emptyString, z.string()),
 	signatory: z.coerce.number(),
+});
+
+export const zDocumentsStatus = z.object({
+	status: z.enum(["open", "closed"]),
+	additionalDetails: z.string().optional(),
 });

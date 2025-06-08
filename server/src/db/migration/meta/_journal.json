@@ -64,6 +64,13 @@
       "when": 1749374503948,
       "tag": "0008_assigned_references",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1749388574891,
+      "tag": "0009_add_reopen_action",
+      "breakpoints": true
     }
   ]
 }
