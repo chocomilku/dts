@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { documents as documentsModel, zDocuments } from "@db/models/documents";
 import { db } from "@db/conn";
 import { trackingNumberProvider } from "@utils/trackingNumberProvider";
-import { eq, getTableColumns, desc } from "drizzle-orm";
+import { eq, getTableColumns, desc, sql } from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import {
 	documentLogs as documentLogsModel,
@@ -104,7 +104,7 @@ documentRouter.post(
 			const trackingNumber = parseData.data;
 
 			// author
-			const { name, departmentId } = getTableColumns(usersModel);
+			const { id: userId, name, departmentId } = getTableColumns(usersModel);
 			const authorData = await db
 				.select({ name, departmentId })
 				.from(usersModel)
@@ -116,42 +116,51 @@ documentRouter.post(
 				return c.json({ message: "Author not found." });
 			}
 
+			type partialUser = {
+				id: number;
+				name: string;
+				departmentId: number;
+			};
+
+			type partialDepartment = {
+				id: number;
+				name: string;
+			};
+
 			// recipient
-			let recipient = null;
+			let recipient: null | partialUser | partialDepartment = null;
+
 			if (form.recipient && form.recipientType) {
-				switch (form.recipientType) {
-					case "user":
-						const recipientUserData = await db
-							.select({ name })
-							.from(usersModel)
-							.where(eq(usersModel.id, form.recipient))
-							.limit(1);
+				if (form.recipientType === "user") {
+					const recipientUserData = await db
+						.select({ id: userId, name, departmentId })
+						.from(usersModel)
+						.where(eq(usersModel.id, form.recipient))
+						.limit(1);
 
-						if (recipientUserData.length != 1) {
-							c.status(404);
-							return c.json({ message: "Recipient not found." });
-						}
+					if (recipientUserData.length != 1) {
+						c.status(404);
+						return c.json({ message: "Recipient not found." });
+					}
 
-						recipient = recipientUserData;
-						break;
-					case "dept":
-						const { name: deptName } = getTableColumns(departmentsModel);
-						const recipientDeptData = await db
-							.select({ name: deptName })
-							.from(departmentsModel)
-							.where(eq(departmentsModel.id, form.recipient))
-							.limit(1);
+					recipient = recipientUserData[0];
+				} else if (form.recipientType === "dept") {
+					const { id: deptId, name: deptName } =
+						getTableColumns(departmentsModel);
+					const recipientDeptData = await db
+						.select({ id: deptId, name: deptName })
+						.from(departmentsModel)
+						.where(eq(departmentsModel.id, form.recipient))
+						.limit(1);
 
-						if (recipientDeptData.length != 1) {
-							c.status(404);
-							return c.json({ message: "Recipient not found." });
-						}
+					if (recipientDeptData.length != 1) {
+						c.status(404);
+						return c.json({ message: "Recipient not found." });
+					}
 
-						recipient = recipientDeptData;
-						break;
-
-					default:
-						recipient = null;
+					recipient = recipientDeptData[0];
+				} else {
+					recipient = null;
 				}
 			}
 
@@ -179,6 +188,26 @@ documentRouter.post(
 				}
 			}
 
+			if (form.action == "assign") {
+				if (!recipient) {
+					c.status(400);
+					return c.json({
+						message: "No recipient.",
+					});
+				}
+				if ("departmentId" in recipient && recipient.departmentId) {
+					if (recipient.departmentId != authorData[0].departmentId) {
+						c.status(400);
+						return c.json({
+							message: "User to assign must be in the same department.",
+						});
+					}
+				} else {
+					c.status(400);
+					return c.json({ message: "Invalid recipient type." });
+				}
+			}
+
 			if (doc[0].assignedDepartment != null) {
 				if (authorData[0].departmentId != doc[0].assignedDepartment) {
 					c.status(403);
@@ -197,6 +226,61 @@ documentRouter.post(
 				}
 			}
 
+			/**
+			 * action assignment matrix
+			 *
+			 * created - author (docAuthor) [assignDept -> null, assignUser -> docAuthor]
+			 * closed -  author (docAuthor) [assignDept -> null, assignUser -> null]
+			 * approve - author (assigned && signatory) [no update]
+			 * deny - author (assigned && signatory) [no update]
+			 * note - author (assigned) [no update]
+			 * transfer - author (assigned), recipient (dept) [assignDept -> dept, assignUser -> null]
+			 * recieve - author (any in department) [assignDept -> null, assignUser -> author]
+			 * assign - author (recieved/assigned) [assignUser -> assigned]
+			 */
+
+			// for doc
+			let assignUser: number | undefined | null = null;
+			let assignDept: number | undefined | null = null;
+
+			switch (form.action) {
+				case "approve":
+				case "deny":
+				case "note":
+					assignUser = undefined;
+					assignDept = undefined;
+					break;
+				case "transfer":
+					assignUser = null;
+					if (!form.recipient) {
+						c.status(400);
+						return c.json({ message: "Recipient field is missing." });
+					}
+					assignDept = form.recipient;
+					break;
+				case "recieve":
+					assignUser = authorId;
+					assignDept = null;
+					break;
+				case "assign":
+					if (!form.recipient) {
+						c.status(400);
+						return c.json({ message: "Recipient field is missing." });
+					}
+					assignUser = form.recipient;
+					assignDept = null;
+					break;
+				default:
+					assignUser = null;
+					assignDept = null;
+			}
+
+			const logMessage = logMessageProvider(
+				form.action,
+				authorData[0].name,
+				recipient ? recipient.name : undefined
+			);
+
 			// log action
 			await db.insert(documentLogsModel).values({
 				document: doc[0].id,
@@ -205,12 +289,24 @@ documentRouter.post(
 				recipient: form.recipient,
 				recipientType: form.recipientType,
 				action: form.action,
-				logMessage: logMessageProvider(
-					form.action,
-					authorData[0].name,
-					recipient ? recipient[0].name : undefined
-				),
+				logMessage: logMessage,
 				additionalDetails: form.additionalDetails,
+			});
+
+			// assign
+			await db
+				.update(documentsModel)
+				.set({
+					lastUpdatedAt: sql`(CURRENT_TIMESTAMP)`,
+					assignedDepartment: assignDept === undefined ? undefined : assignDept,
+					assignedUser: assignDept === undefined ? undefined : assignUser,
+				})
+				.where(eq(documentsModel.id, doc[0].id));
+
+			c.status(201);
+			return c.json({
+				message: "Document status updated!",
+				data: { logMessage: logMessage },
 			});
 		} catch (e) {
 			console.error(e);
@@ -289,6 +385,8 @@ documentRouter.post(
 					details: form.details,
 					signatory: form.signatory,
 					author: authorId,
+					assignedUser: authorId,
+					assignedDepartment: null,
 				})
 				.returning({
 					id: documentsModel.id,
