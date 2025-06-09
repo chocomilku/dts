@@ -26,6 +26,51 @@ type Variables = {
 
 const documentRouter = new Hono<{ Variables: Variables }>();
 
+//#region documents - GET ALL
+documentRouter.get("/", sessionAuth("any"), async (c) => {
+	try {
+		const userId = c.get("userId");
+		const { assigned } = c.req.query();
+
+		const query = z.coerce.boolean().default(false).safeParse(assigned);
+		if (!query.success) {
+			c.status(400);
+			return c.json(query.error);
+		}
+
+		const { departmentId } = getTableColumns(usersModel);
+
+		const user = await db
+			.select({ departmentId })
+			.from(usersModel)
+			.limit(1)
+			.where(eq(usersModel.id, userId));
+
+		if (user.length != 1) {
+			c.status(404);
+			return c.json({ message: "User not found." });
+		}
+
+		const data = await db
+			.select()
+			.from(documentsModel)
+			.where(
+				query.data
+					? sql`${documentsModel.assignedUser} = ${userId} OR ${documentsModel.assignedDepartment} = ${user[0].departmentId}`
+					: undefined
+			)
+			.orderBy(desc(documentsModel.lastUpdatedAt));
+
+		c.status(200);
+		return c.json({ message: "OK", data: data });
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+//#endregion
+
 //#region GET document:id/logs
 documentRouter.get("/:tn/logs", sessionAuth("any"), async (c) => {
 	try {
@@ -546,23 +591,5 @@ documentRouter.post(
 		}
 	}
 );
-
-//#region documents - GET ALL
-documentRouter.get("/", sessionAuth("any"), async (c) => {
-	try {
-		const data = await db
-			.select()
-			.from(documentsModel)
-			.orderBy(desc(documentsModel.lastUpdatedAt));
-
-		c.status(200);
-		return c.json({ message: "OK", data: data });
-	} catch (e) {
-		console.error(e);
-		c.status(500);
-		return c.json({ message: "Internal Server Error" });
-	}
-});
-//#endregion
 
 export default documentRouter;
