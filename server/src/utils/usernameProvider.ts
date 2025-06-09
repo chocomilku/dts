@@ -1,7 +1,7 @@
 import { sqliteProvider } from "@db/conn";
 
 export const usernameProvider = async () => {
-	// MNL25-0001
+	// QC25-0001
 	// Area Code - Year - Sequence ID
 
 	const query = sqliteProvider.prepare(
@@ -9,7 +9,7 @@ export const usernameProvider = async () => {
 	);
 	const res = query.get() as { seq: number };
 
-	const PREFIX = "MNL";
+	const PREFIX = "QC";
 	const year = new Date().getFullYear().toString().slice(-2);
 	const sequenceId = ((res.seq ?? 0) + 1).toString().padStart(4, "0");
 
