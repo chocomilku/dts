@@ -116,20 +116,14 @@
                     <hr>
                     <form class="d-flex flex-column gap-2" id="action-form" novalidate>
                         <div>
-                            <label for="actionType" class="form-label">Action Type</label>
-                            <select name="actionType" id="actionType" class="form-select">
+                            <label for="actionType" class="form-label required">Action Type</label>
+                            <select name="actionType" id="actionType" class="form-select" required>
                                 <option value="note">Post Note</option>
                                 <option value="transfer">Transfer</option>
+                                <option value="receive">Receive</option>
                                 <option value="assign">Assign</option>
                                 <option value="approve">Approve</option>
                                 <option value="deny">Deny</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="department" class="form-label">Department to transfer</label>
-                            <select name="department" id="department" class="form-select">
-                                <option value="">IT Department</option>
                             </select>
                         </div>
 

@@ -25,7 +25,7 @@ export const documentLogs = sqliteTable("documentLogs", {
 			"reopen",
 			"note",
 			"transfer",
-			"recieve",
+			"receive",
 			"assign",
 			"approve",
 			"deny",
@@ -43,10 +43,10 @@ export const zDocumentLogs = z.object({
 		// reopen only available through PATCH /documents/:id/status
 		"note",
 		"transfer",
-		"recieve",
+		"receive",
 		"assign",
 		"approve", // add check to limit only to signatory
-		"deny",
+		"deny", // add check to limit only to signatory
 	]),
 	recipient: z.coerce.number().optional(),
 	recipientType: z.enum(["user", "dept"]).optional(),

@@ -4,7 +4,7 @@ type ActionTypes =
 	| "reopen"
 	| "note"
 	| "transfer"
-	| "recieve"
+	| "receive"
 	| "assign"
 	| "approve"
 	| "deny";
@@ -19,7 +19,7 @@ export const logMessageProvider = (
 			return `Document has been created by ${author}.`;
 		case "transfer":
 			return `Document has been transferred to ${recipient}.`;
-		case "recieve":
+		case "receive":
 			return `Document has been received by ${author}.`;
 		case "assign":
 			return `Document has been assigned to ${recipient}.`;

@@ -270,7 +270,7 @@ documentRouter.post(
 					}
 					assignDept = form.recipient;
 					break;
-				case "recieve":
+				case "receive":
 					assignUser = authorId;
 					assignDept = null;
 					break;

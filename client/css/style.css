@@ -197,7 +197,7 @@ body {
 }
 
 label.required::after {
-    content: "*";
+    content: " *";
     color: var(--bs-danger);
 }
 
