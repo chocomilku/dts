@@ -11,7 +11,6 @@
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/sidenavbar.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
-    <script defer type="module" src="/js/dashboard.page.js"></script>
 </head>
 
 <body>
@@ -32,7 +31,13 @@
                         <h4 class="fw-bold profile__name">&nbsp;</h4>
                         <p class="fw-light profile__dept">&nbsp;</p>
                     </div>
-                    <div class="profile__dropdown">▼</div>
+                    <div class="dropdown">
+                        <button class="profile__dropdown btn text-white type=" button" data-bs-toggle="dropdown"
+                            aria-expanded="false">▼</button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" id="logout">Logout</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="navigation">
                     <hr>
@@ -53,22 +58,6 @@
                         <span class="material-symbols-outlined">article</span>
                         <span class="fw-semibold">Documents</span>
                     </a>
-                    <a href="/documents?assigned=yes" class="navigation__item" onclick="closeSidebarIfMobile()">
-                        <span class="material-symbols-outlined">demography</span>
-                        <span class="fw-semibold">Assigned to me</span>
-                    </a>
-                    <a href="/documents?overdue=yes" class="navigation__item" onclick="closeSidebarIfMobile()">
-                        <span class="material-symbols-outlined">overview</span>
-                        <span class="fw-semibold">Overdue</span>
-                    </a>
-                    <a href="/receive" class="navigation__item" onclick="closeSidebarIfMobile()">
-                        <span class="material-symbols-outlined">approval_delegation</span>
-                        <span class="fw-semibold">Receive</span>
-                    </a>
-                    <a href="/retrieve" class="navigation__item" onclick="closeSidebarIfMobile()">
-                        <span class="material-symbols-outlined">approval_delegation_off</span>
-                        <span class="fw-semibold">Retrieve</span>
-                    </a>
                     <hr>
                     <a href="/departments" class="navigation__item" onclick="closeSidebarIfMobile()">
                         <span class="material-symbols-outlined">supervisor_account</span>
@@ -86,7 +75,7 @@
             <nav class="topbar">
                 <span class="material-symbols-outlined"><button type="button" onclick="toggleSidebar()"
                         class="btn btn-outline-warning">&#xe5d2</button></span>
-                <h5>Document Tracking System</h5>
+                <h5>Quezon City Document Tracking System</h5>
                 <span class="material-symbols-outlined"><button type="button"
                         class="btn btn-outline-warning">&#xe51c</button></span>
             </nav>

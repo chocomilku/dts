@@ -25,3 +25,22 @@ const loadUserData = async () => {
 }
 
 document.addEventListener("DOMContentLoaded", loadUserData);
+
+// Logout handler
+document.addEventListener("DOMContentLoaded", () => {
+    const logoutBtn = document.getElementById("logout");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+                await fetch("/api/logout", {
+                    method: "POST",
+                    credentials: "include"
+                });
+                window.location.href = "/login";
+            } catch (err) {
+                console.error("Logout failed", err);
+            }
+        });
+    }
+});

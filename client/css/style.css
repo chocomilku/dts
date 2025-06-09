@@ -96,7 +96,7 @@ body {
 
 .sidebar__banner {
     width: 100%;
-    max-height: 75px;
+    height: 100px;
     margin: 0.5rem auto;
     object-fit: cover;
     background-position: center;
