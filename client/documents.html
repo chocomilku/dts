@@ -10,6 +10,7 @@
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/sidenavbar.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
+    <script defer type="module" src="/js/documents.page.js"></script>
 </head>
 
 <body>
@@ -81,21 +82,13 @@
             <main class="container-lg d-flex flex-column">
                 <h1 class="text-center mb-4"><b>Documents</b></h1>
 
-                <div class="d-flex flex-row gap-4 align-items-center mb-4">
+                <!-- <div class="d-flex flex-row gap-4 align-items-center mb-4">
                     <input type="text" name="" id="" class="form-control form-control-lg"
                         placeholder="Search Documents">
                     <button class="btn btn-warning btn-lg">Search</button>
                 </div>
 
                 <div class="main-content flex-row justify-content-evenly flex-wrap">
-                    <div>
-                        <label for="dateRange" class="form-label">Date Range</label>
-                        <select class="form-select" name="dateRange" id="dateRange">
-                            <option value="">YYYY-MM-DD</option>
-                        </select>
-
-                        <!-- http://www.daterangepicker.com/ -->
-                    </div>
                     <div>
                         <label for="department" class="form-label">Department</label>
                         <select name="department" id="department" class="form-select">
@@ -135,39 +128,10 @@
                             <option value="100">100</option>
                         </select>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="main-content">
-                    <h2><b>Search Results</b></h2>
-                    <div class="thread-item">
-                        <div class="thread-visible">
-                            <div>
-                                <div class="thread-top">
-                                    <h3>
-                                        <a href="/documents/1" class="thread-top__text">DOC202500001 <span
-                                                class="badge bg-success-subtle text-success-emphasis rounded-pill fs-6">Open</span></a>
-                                    </h3>
-                                </div>
-                                <span>
-                                    Document name here
-                                </span>
-                            </div>
-                            <div class="profile__dropdown">
-                                <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#thread-collapse-1" aria-expanded="false"
-                                    aria-controls="thread-collapse-1">▼</button>
-                            </div>
-                        </div>
-                        <div class="thread-collapse collapse" id="thread-collapse-1">
-                            <hr>
-                            <div><b>Origin Department</b> <span>HR Department</span></div>
-                            <div><b>Document Type</b> <span>Request Letter</span></div>
-                            <div><b>Created By</b> <span>HR User 1 (HR Department)</span></div>
-                            <div><b>Currently Assigned To</b> <span>IT User 1 (IT Department)</span></div>
-                            <div><b>Signatory</b> <span>IT User 1 (IT Department)</span></div>
-                            <div><b>Last Updated At</b> <span>2025-06-06 09:17:23</span></div>
-                        </div>
-                    </div>
+                <div class="main-content" id="docList">
+                    <h2><b>Latest Documents</b> <span class="fs-6">(Last updated on top)</span></h2>
                 </div>
 
             </main>

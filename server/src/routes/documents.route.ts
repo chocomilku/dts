@@ -461,12 +461,15 @@ documentRouter.patch(
 				additionalDetails: form.additionalDetails,
 			});
 
-			await db.update(documentsModel).set({
-				lastUpdatedAt: sql`(CURRENT_TIMESTAMP)`,
-				assignedDepartment: null,
-				assignedUser: null,
-				status: form.status,
-			}).where(eq(documentsModel.id, doc[0].id));
+			await db
+				.update(documentsModel)
+				.set({
+					lastUpdatedAt: sql`(CURRENT_TIMESTAMP)`,
+					assignedDepartment: null,
+					assignedUser: null,
+					status: form.status,
+				})
+				.where(eq(documentsModel.id, doc[0].id));
 
 			c.status(204);
 			return c.json({});
@@ -543,5 +546,23 @@ documentRouter.post(
 		}
 	}
 );
+
+//#region documents - GET ALL
+documentRouter.get("/", sessionAuth("any"), async (c) => {
+	try {
+		const data = await db
+			.select()
+			.from(documentsModel)
+			.orderBy(desc(documentsModel.lastUpdatedAt));
+
+		c.status(200);
+		return c.json({ message: "OK", data: data });
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+//#endregion
 
 export default documentRouter;
