@@ -93,9 +93,9 @@
                 <h1 class="text-center mb-4"><b>Document Detail</b></h1>
 
                 <div class="main-content hr-no-margin">
-                    <div class="d-flex flex-row gap-2 align-items-center">
+                    <div class="d-flex flex-row gap-2 align-items-center" id="docTopInfo">
                         <h5><b id="docTrackingNumber">&nbsp;</b></h5>
-                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Open</span>
+
                     </div>
                     <h2><b id="docTitle">&nbsp;</b></h2>
                     <p class="mb-0" id="docDetails">&nbsp;</p>
@@ -136,37 +136,8 @@
                     </form>
                 </div>
 
-                <div class="main-content">
+                <div class="main-content" id="docThread">
                     <h2><b>Document Thread</b> <span class="fs-6">(Latest status on Top)</span></h2>
-                    <div class="thread-item">
-                        <div class="thread-visible">
-                            <div>
-                                <div class="thread-top">
-                                    <h4 class="thread-top__text">2025-06-06 09:19:10 — HR Department
-                                        <span
-                                            class="badge bg-success-subtle text-success-emphasis rounded-pill fs-6">Created</span>
-                                    </h4>
-                                </div>
-                                <span>
-                                    Document has been created by HR user 1
-                                </span>
-                            </div>
-                            <div class="profile__dropdown">
-                                <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#thread-collapse-1" aria-expanded="false"
-                                    aria-controls="thread-collapse-1">▼</button>
-                            </div>
-                        </div>
-                        <div class="thread-collapse collapse" id="thread-collapse-1">
-                            <hr>
-                            <div><b>Origin Department</b> <span>HR Department</span></div>
-                            <div><b>Document Type</b> <span>Request Letter</span></div>
-                            <div><b>Created By</b> <span>HR User 1 (HR Department)</span></div>
-                            <div><b>Currently Assigned To</b> <span>IT User 1 (IT Department)</span></div>
-                            <div><b>Signatory</b> <span>IT User 1 (IT Department)</span></div>
-                            <div><b>Last Updated At</b> <span>2025-06-06 09:17:23</span></div>
-                        </div>
-                    </div>
                 </div>
             </main>
         </div>

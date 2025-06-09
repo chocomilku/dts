@@ -94,3 +94,31 @@ export async function getUserData(id) {
     userCache.set(id, promise);
     return promise;
 }
+
+
+export const badgeColorProvider = (type) => {
+    // bg-success-subtle text-success-emphasis
+    switch (type) {
+        case "open":
+        case "reopen":
+        case "created":
+        case "approve":
+            return `bg-success-subtle text-success-emphasis`
+
+        case "transfer":
+            return `bg-warning-subtle text-warning-emphasis`
+
+        case "receive":
+            return `bg-info-subtle text-info-emphasis`
+
+        case "assign":
+            return `bg-primary-subtle text-primary-emphasis`
+
+        case "closed":
+        case "deny":
+            return `bg-danger-subtle text-danger-emphasis`
+
+        default:
+            return `bg-secondary-subtle text-secondary-emphasis`
+    }
+}

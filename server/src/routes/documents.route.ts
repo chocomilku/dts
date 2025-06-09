@@ -466,7 +466,7 @@ documentRouter.patch(
 				assignedDepartment: null,
 				assignedUser: null,
 				status: form.status,
-			});
+			}).where(eq(documentsModel.id, doc[0].id));
 
 			c.status(204);
 			return c.json({});
