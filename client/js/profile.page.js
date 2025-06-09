@@ -7,7 +7,7 @@ const loadUserData = async () => {
         const resDepts = await fetch(`${API_URL}/api/departments`, { credentials: "include" })
         if (statusRedirect(resDepts, "href")) return;
 
-        const user = await getUserData();
+        const user = await getUserData("@me");
 
         /**
          * @type {{
@@ -71,7 +71,6 @@ const loadUserData = async () => {
 
     } catch (e) {
         console.error(e);
-        window.location.replace("./servererror.html");
     }
 }
 

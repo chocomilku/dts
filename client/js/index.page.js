@@ -8,6 +8,6 @@ import { API_URL } from "./constants.js";
         if (!redirected) redirect("/dashboard", "replace");
 
     } catch (e) {
-        window.location.replace("/servererror");
+        console.error(e)
     }
 })();

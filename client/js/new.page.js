@@ -43,7 +43,6 @@ const getUsers = async () => {
 
     } catch (e) {
         console.error(e);
-        window.location.replace("./servererror.html");
     }
 }
 

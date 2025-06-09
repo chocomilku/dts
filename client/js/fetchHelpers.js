@@ -1,8 +1,7 @@
 import { API_URL } from "./constants.js";
 import { statusRedirect } from "./statusRedirect.js";
 
-let cachedDept = null;
-let deptPromise = null;
+const deptCache = new Map();
 
 /**
  * @typedef {object} DepartmentData
@@ -27,34 +26,36 @@ let deptPromise = null;
  * @returns {Promise<DepartmentData>} Resolves with the department data object.
 */
 export async function getDepartmentData(id) {
-    if (cachedDept) return cachedDept;
-    if (deptPromise) return deptPromise;
+    if (deptCache.has(id)) return deptCache.get(id);
 
-    deptPromise = fetch(`${API_URL}/api/departments/${id}`, { credentials: "include" }).then(async res => {
-        if (statusRedirect(res, "href")) throw new Error("Redirected");
+    const promise = fetch(`${API_URL}/api/departments/${id}`, { credentials: "include" })
+        .then(async res => {
+            if (statusRedirect(res, "href")) throw new Error("Redirected");
+            /** @type {DepartmentResponse} */
+            const data = await res.json();
+            const dept = data.data[0];
+            deptCache.set(id, Promise.resolve(dept));
+            return dept;
+        })
+        .catch(e => {
+            deptCache.delete(id);
+            throw e;
+        });
 
-        /** @type {DepartmentResponse} */
-        const data = await res.json();
-        cachedDept = data.data[0];
-        return cachedDept;
-    }).catch(e => {
-        deptPromise = null;
-        throw e;
-    })
-
-    return deptPromise;
+    deptCache.set(id, promise);
+    return promise;
 }
 
-let cachedUser = null;
-let userPromise = null;
+const userCache = new Map();
 
 /**
- * Fetches and caches the current user's data from the API.
- * If the data is already cached, returns it immediately.
- * If a fetch is in progress, returns the existing promise.
+ * Fetches and caches a user's data from the API by ID.
+ * If the data is already cached for that ID, returns it immediately.
+ * If a fetch is in progress for that ID, returns the existing promise.
  * Otherwise, fetches the user data and caches it.
  *
  * @async
+ * @param {number|string} id - User ID to fetch, or "@me" for current user.
  * @returns {Promise<{
  *   department: { id: number, name: string } | null,
  *   id: number,
@@ -65,33 +66,31 @@ let userPromise = null;
  * }>} Resolves with the user data object.
  */
 export async function getUserData(id) {
-    if (cachedUser) return cachedUser;
-    if (userPromise) return userPromise;
+    if (userCache.has(id)) return userCache.get(id);
 
-    userPromise = fetch(`${API_URL}/api/users/${id}`, {
+    const promise = fetch(`${API_URL}/api/users/${id}`, {
         credentials: "include"
     }).then(async res => {
         if (statusRedirect(res, "href")) throw new Error("Redirected");
-
         /**
          * @type {{message: string, data: {
-        * department: {
-        *  id: number;
-        *  name: string} | null;
-        * id: number;
-        * role: "superadmin" | "admin" | "clerk" | "officer";
-        * name: string;
-        * username: string;
-        * createdAt: string | null;
-        * }[]}}
-        */
+         * department: { id: number; name: string } | null;
+         * id: number;
+         * role: "superadmin" | "admin" | "clerk" | "officer";
+         * name: string;
+         * username: string;
+         * createdAt: string | null;
+         * }[]}}
+         */
         const data = await res.json();
-        cachedUser = data.data[0]
-        return cachedUser;
+        const user = data.data[0];
+        userCache.set(id, Promise.resolve(user));
+        return user;
     }).catch(e => {
-        userPromise = null;
+        userCache.delete(id);
         throw e;
-    })
+    });
 
-    return userPromise;
+    userCache.set(id, promise);
+    return promise;
 }

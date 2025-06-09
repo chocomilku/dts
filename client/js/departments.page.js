@@ -44,7 +44,6 @@ const loadDepartments = async () => {
 
     } catch (e) {
         console.error(e);
-        window.location.replace("/servererror");
     }
 }
 

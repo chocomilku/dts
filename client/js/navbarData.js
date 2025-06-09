@@ -1,4 +1,3 @@
-import { API_URL } from "./constants.js"
 import { getUserData } from "./fetchHelpers.js";
 
 const loadUserData = async () => {
@@ -22,7 +21,6 @@ const loadUserData = async () => {
 
     } catch (e) {
         console.error(e);
-        window.location.replace("/servererror");
     }
 }
 
