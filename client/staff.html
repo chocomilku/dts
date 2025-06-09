@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document | Document Tracking System</title>
+    <title>Staff Members | Document Tracking System</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/sidenavbar.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
-    <script defer type="module" src="/js/document.page.js"></script>
+    <script defer type="module" src="/js/staff.page.js"></script>
 </head>
 
 <body>
@@ -80,56 +80,68 @@
                         class="btn btn-outline-warning">&#xe51c</button></span>
             </nav>
             <main class="container-lg d-flex flex-column">
-                <h1 class="text-center mb-4"><b>Document Detail</b></h1>
+                <h1 class="text-center mb-4"><b>Staff Members</b></h1>
 
-                <div class="main-content hr-no-margin">
-                    <div class="d-flex flex-row gap-2 align-items-center" id="docTopInfo">
-                        <h5><b id="docTrackingNumber">&nbsp;</b></h5>
-
-                    </div>
-                    <h2><b id="docTitle">&nbsp;</b></h2>
-                    <p class="mb-0" id="docDetails">&nbsp;</p>
-                    <hr>
-                    <div class="thread-collapse" id="docAttributes">
-                        &nbsp;
-                    </div>
-                </div>
-
-                <div class="main-content hr-no-margin">
-                    <h4><b>Document Actions</b></h4>
-                    <div id="actionAlertPlaceholder"></div>
-                    <div class="d-flex flex-row gap-2" id="buttonRows">
-                        <!-- <button class="btn btn-danger">Close</button> -->
-                        <!-- <button class="btn btn-warning">Edit</button>
-                        <button class="btn btn-info">Print</button> -->
-                    </div>
-                    <hr>
-                    <form class="d-flex flex-column gap-2" id="action-form" novalidate>
-                        <div>
-                            <label for="actionType" class="form-label required">Action Type</label>
-                            <select name="actionType" id="actionType" class="form-select" required>
-                                <option value="note">Post Note</option>
-                                <option value="transfer">Transfer</option>
-                                <option value="receive">Receive</option>
-                                <option value="assign">Assign</option>
-                                <option value="approve">Approve</option>
-                                <option value="deny">Deny</option>
-                            </select>
+                <div class="main-content">
+                    <div id="staffList" class="d-flex flex-column gap-2">
+                        <div class=" d-flex flex-row gap-2 align-items-center">
+                            <h2><b id="staffDept">Staff Members</b></h2>
+                            <button class="btn btn-sm btn-primary material-symbols-outlined" data-bs-toggle="modal"
+                                data-bs-target="#newUserModal" id="addUserButton" style="display:none;">
+                                add
+                            </button>
                         </div>
+                    </div>
 
-                        <div>
-                            <label for="details" class="form-label">Additional Details</label>
-                            <textarea name="details" id="details" class="form-control"></textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary" id="form-submit">Submit</button>
-                    </form>
                 </div>
 
-                <div class="main-content" id="docThread">
-                    <h2><b>Document Thread</b> <span class="fs-6">(Latest status on Top)</span></h2>
-                </div>
             </main>
+            <div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="newUserModalLabel">New Staff Member</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="new-user-form" novalidate>
+                            <div class="modal-body">
+                                <div>
+                                    <label for="user-name" class="form-label required">Name</label>
+                                    <input type="text" name="name" id="user-name" class="form-control" required>
+                                    <div id="user-name-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-role" class="form-label required">Role</label>
+                                    <select name="role" id="user-role" class="form-select" required>
+                                        <option value="clerk">Clerk</option>
+                                        <option value="officer">Officer</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                    <div id="user-role-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-department" class="form-label required">Department</label>
+                                    <select name="departmentId" id="user-department" class="form-select" required>
+                                        <option value="">Loading...</option>
+                                    </select>
+                                    <div id="user-department-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-password" class="form-label required">Password</label>
+                                    <input type="password" name="password" id="user-password" class="form-control"
+                                        required>
+                                    <div id="user-password-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success" id="user-form-submit">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

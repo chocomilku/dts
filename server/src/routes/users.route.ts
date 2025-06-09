@@ -28,7 +28,7 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 		const parsedData = querySchema.safeParse({
 			limit,
 			offset,
-			department,
+			departmentId: department,
 		});
 
 		if (!parsedData.success) {

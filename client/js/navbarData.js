@@ -15,7 +15,12 @@ const loadUserData = async () => {
 
         if (deptElem) {
             for (let i = 0; i < deptElem.length; i++) {
-                deptElem[i].textContent = user.department?.name ?? "No Department";
+                let content = "No Department";
+                if (user.department) {
+                    content = `${user.department.name} (${user.role})`
+                }
+
+                deptElem[i].textContent = content;
             }
         }
 
