@@ -26,6 +26,54 @@ type Variables = {
 
 const documentRouter = new Hono<{ Variables: Variables }>();
 
+//#region documents/count
+documentRouter.get("/count", sessionAuth("any"), async (c) => {
+	try {
+		const userId = c.get("userId");
+
+		const { departmentId } = getTableColumns(usersModel);
+
+		const user = await db
+			.select({ departmentId })
+			.from(usersModel)
+			.limit(1)
+			.where(eq(usersModel.id, userId));
+
+		if (user.length != 1) {
+			c.status(404);
+			return c.json({ message: "User not found." });
+		}
+
+		const openCount = await db.$count(
+			documentsModel,
+			eq(documentsModel.status, "open")
+		);
+		const closedCount = await db.$count(
+			documentsModel,
+			eq(documentsModel.status, "closed")
+		);
+		const assignedCount = await db.$count(
+			documentsModel,
+			sql`${documentsModel.assignedUser} = ${userId} OR ${documentsModel.assignedDepartment} = ${user[0].departmentId}`
+		);
+
+		c.status(200);
+		return c.json({
+			message: "OK",
+			data: {
+				openCount,
+				closedCount,
+				assignedCount,
+			},
+		});
+	} catch (e) {
+		console.error(e);
+		c.status(500);
+		return c.json({ message: "Internal Server Error" });
+	}
+});
+//#endregion
+
 //#region documents - GET ALL
 documentRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
