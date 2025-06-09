@@ -30,7 +30,44 @@ services:
     networks:
       - net
 
+  server-prod:
+    profiles: [prod]
+    container_name: dts-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile.prod
+    volumes:
+      - ./server:/app
+      - ./database:/database
+    ports:
+      - "54321:54321"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - redis
+    networks:
+      - net
+
   client-dev:
+    container_name: dts-client
+    profiles: [dev]
+    image: caddy:2.10.0
+    restart: unless-stopped
+    volumes:
+      - ./config/caddy:/etc/caddy
+      - ./client:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    depends_on:
+      - server-dev
+    networks:
+      - net
+
+  client-prod:
     container_name: dts-client
     profiles: [dev]
     image: caddy:2.10.0
