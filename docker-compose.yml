@@ -37,7 +37,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.prod
     volumes:
-      - ./server:/app
+      # - ./server:/app
       - ./database:/database
     ports:
       - "54321:54321"
