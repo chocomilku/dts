@@ -69,7 +69,7 @@ services:
 
   client-prod:
     container_name: dts-client
-    profiles: [dev]
+    profiles: [prod]
     image: caddy:2.10.0
     restart: unless-stopped
     volumes:
@@ -82,7 +82,7 @@ services:
       - 443:443
       - 443:443/udp
     depends_on:
-      - server-dev
+      - server-prod
     networks:
       - net
 
