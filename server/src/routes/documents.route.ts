@@ -9,7 +9,17 @@ import {
 } from "@db/models/documents";
 import { db } from "@db/conn";
 import { trackingNumberProvider } from "@utils/trackingNumberProvider";
-import { eq, getTableColumns, desc, sql, SQL, and, asc, or } from "drizzle-orm";
+import {
+	eq,
+	getTableColumns,
+	desc,
+	sql,
+	SQL,
+	and,
+	asc,
+	or,
+	like,
+} from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import {
 	documentLogs as documentLogsModel,
@@ -75,110 +85,119 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 //#endregion
 
 //#region documents - GET ALL
-documentRouter.get("/", sessionAuth("any"), async (c) => {
-	try {
-		const userId = c.get("userId");
-		const query = c.req.query();
-
-		type SortFilters =
-			| "created-asc"
-			| "created-desc"
-			| "updated-asc"
-			| "updated-desc";
-
-		const querySchema = z.object({
-			limit: z.coerce.number().int().positive().max(100).default(10).catch(10),
-			offset: z.coerce.number().int().nonnegative().default(0).catch(0),
-			department: z.coerce.number().optional().catch(undefined),
-			status: z.enum(["open", "closed"]).optional().catch(undefined),
-			assigned: z.coerce.boolean().default(false).catch(false),
-			q: z.string().optional().catch(undefined),
-			sort: z
-				.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
-				.default("updated-desc")
-				.catch("updated-desc"),
-		});
-		const parsedQuery = querySchema.safeParse(query);
-
-		if (!parsedQuery.success) {
-			c.status(400);
-			return c.json(parsedQuery.error);
-		}
-
-		const { departmentId } = getTableColumns(usersModel);
-
-		const user = await db
-			.select({ departmentId })
-			.from(usersModel)
-			.limit(1)
-			.where(eq(usersModel.id, userId));
-
-		if (user.length != 1) {
-			c.status(404);
-			return c.json({ message: "User not found." });
-		}
-
-		// documents query
-
-		const filters: SQL[] = [];
-		if (parsedQuery.data.department) {
-			filters.push(
-				eq(documentsModel.originDepartment, parsedQuery.data.department)
-			);
-		}
-
-		if (parsedQuery.data.status) {
-			filters.push(eq(documentsModel.status, parsedQuery.data.status));
-		}
-
-		if (parsedQuery.data.assigned) {
-			const assignedFilter = or(
-				eq(documentsModel.assignedUser, userId),
-				eq(documentsModel.assignedDepartment, user[0].departmentId)
-			);
-			if (assignedFilter) {
-				filters.push(assignedFilter);
-			}
-		}
-
-		const querySortFilter = (filter: SortFilters) => {
-			switch (filter) {
-				case "created-asc":
-					return asc(documentsModel.createdAt);
-
-				case "created-desc":
-					return desc(documentsModel.createdAt);
-
-				case "updated-asc":
-					return asc(documentsModel.lastUpdatedAt);
-
-				case "updated-desc":
-					return desc(documentsModel.lastUpdatedAt);
-				default:
-					return desc(documentsModel.lastUpdatedAt);
-			}
-		};
-
-		const sqlQuery = db
-			.select()
-			.from(documentsModel)
-			.where(and(...filters))
-			.limit(parsedQuery.data.limit)
-			.offset(parsedQuery.data.offset)
-			.orderBy(querySortFilter(parsedQuery.data.sort));
-
-		// console.log(sqlQuery.toSQL());
-
-		const data = await sqlQuery;
-
-		c.status(200);
-		return c.json({ message: "OK", data: data });
-	} catch (e) {
-		console.error(e);
-		c.status(500);
-		return c.json({ message: "Internal Server Error" });
-	}
+const getAllDocumentsQuerySchema = z.object({
+	limit: z.coerce.number().int().positive().max(100).default(10).catch(10),
+	offset: z.coerce.number().int().nonnegative().default(0).catch(0),
+	department: z.coerce.number().optional().catch(undefined),
+	status: z.enum(["open", "closed"]).optional().catch(undefined),
+	assigned: z.coerce.boolean().default(false).catch(false),
+	q: z.string().optional().catch(undefined),
+	sort: z
+		.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
+		.default("updated-desc")
+		.catch("updated-desc"),
 });
+
+documentRouter.get(
+	"/",
+	sessionAuth("any"),
+	zValidator("query", getAllDocumentsQuerySchema),
+	async (c) => {
+		try {
+			type SortFilters =
+				| "created-asc"
+				| "created-desc"
+				| "updated-asc"
+				| "updated-desc";
+
+			const userId = c.get("userId");
+			const parsedQuery = c.req.valid("query");
+
+			const { departmentId } = getTableColumns(usersModel);
+
+			const user = await db
+				.select({ departmentId })
+				.from(usersModel)
+				.limit(1)
+				.where(eq(usersModel.id, userId));
+
+			if (user.length != 1) {
+				c.status(404);
+				return c.json({ message: "User not found." });
+			}
+
+			// documents query
+
+			const filters: SQL[] = [];
+			if (parsedQuery.department) {
+				filters.push(
+					eq(documentsModel.originDepartment, parsedQuery.department)
+				);
+			}
+
+			if (parsedQuery.status) {
+				filters.push(eq(documentsModel.status, parsedQuery.status));
+			}
+
+			if (parsedQuery.assigned) {
+				const assignedFilter = or(
+					eq(documentsModel.assignedUser, userId),
+					eq(documentsModel.assignedDepartment, user[0].departmentId)
+				);
+				if (assignedFilter) {
+					filters.push(assignedFilter);
+				}
+			}
+
+			if (parsedQuery.q) {
+				const searchTerm = `%${parsedQuery.q}%`;
+				const searchFilter = or(
+					like(documentsModel.title, searchTerm),
+					like(documentsModel.trackingNumber, searchTerm)
+				);
+
+				if (searchFilter) filters.push(searchFilter);
+			}
+
+			const querySortFilter = (filter: SortFilters) => {
+				switch (filter) {
+					case "created-asc":
+						return asc(documentsModel.createdAt);
+
+					case "created-desc":
+						return desc(documentsModel.createdAt);
+
+					case "updated-asc":
+						return asc(documentsModel.lastUpdatedAt);
+
+					case "updated-desc":
+						return desc(documentsModel.lastUpdatedAt);
+					default:
+						return desc(documentsModel.lastUpdatedAt);
+				}
+			};
+
+			const sqlQuery = db
+				.select()
+				.from(documentsModel)
+				.where(filters.length > 0 ? and(...filters) : undefined)
+				.limit(parsedQuery.limit)
+				.offset(parsedQuery.offset)
+				.orderBy(querySortFilter(parsedQuery.sort));
+
+			// console.log(sqlQuery.toSQL());
+
+			const data = await sqlQuery;
+
+			c.status(200);
+			return c.json({ message: "OK", data: data });
+		} catch (e) {
+			console.error(e);
+			c.status(500);
+			return c.json({ message: "Internal Server Error" });
+		}
+	}
+);
 //#endregion
 
 //#region GET document:id/logs
