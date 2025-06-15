@@ -82,7 +82,7 @@
             <main class="container-lg d-flex flex-column">
                 <h1 class="text-center mb-4"><b>Documents</b></h1>
 
-                <!-- <div class="d-flex flex-row gap-4 align-items-center mb-4">
+                <div class="d-flex flex-row gap-4 align-items-center mb-4">
                     <input type="text" name="" id="" class="form-control form-control-lg"
                         placeholder="Search Documents">
                     <button class="btn btn-warning btn-lg">Search</button>
@@ -90,13 +90,13 @@
 
                 <div class="main-content flex-row justify-content-evenly flex-wrap">
                     <div>
-                        <label for="department" class="form-label">Department</label>
+                        <label for="department" class="form-label"><b>Origin Department</b></label>
                         <select name="department" id="department" class="form-select">
                             <option value="all">All</option>
                         </select>
                     </div>
                     <div>
-                        <label for="status" class="form-label">Status</label>
+                        <label for="status" class="form-label"><b>Status</b></label>
                         <select name="status" id="status" class="form-select">
                             <option value="any">Any</option>
                             <option value="open">Open</option>
@@ -104,23 +104,23 @@
                         </select>
                     </div>
                     <div>
-                        <label for="assigned" class="form-label">Assigned to me</label>
+                        <label for="assigned" class="form-label"><b>Assigned to me</b></label>
                         <select name="assigned" id="assigned" class="form-select">
                             <option value="no">No</option>
                             <option value="yes">Yes</option>
                         </select>
                     </div>
                     <div>
-                        <label for="sort" class="form-label">Sort By</label>
+                        <label for="sort" class="form-label"><b>Sort By</b></label>
                         <select name="sort" id="sort" class="form-select">
-                            <option value="date-asc">Created (Ascending)</option>
-                            <option value="date-dsc">Created (Descending)</option>
-                            <option value="date-dsc">Last Updated (Ascending)</option>
-                            <option value="date-dsc">Last Updated (Descending)</option>
+                            <option value="created-asc">Created (Ascending)</option>
+                            <option value="created-desc">Created (Descending)</option>
+                            <option value="updated-asc">Last Updated (Ascending)</option>
+                            <option value="updated-desc">Last Updated (Descending)</option>
                         </select>
                     </div>
                     <div>
-                        <label for="entries" class="form-label">No. of Entries</label>
+                        <label for="entries" class="form-label"><b>No. of Entries</b></label>
                         <select name="entries" id="entries" class="form-select">
                             <option value="10">10</option>
                             <option value="25">25</option>
@@ -128,7 +128,7 @@
                             <option value="100">100</option>
                         </select>
                     </div>
-                </div> -->
+                </div>
 
                 <div class="main-content" id="docList">
                     <h2><b>Latest Documents</b> <span class="fs-6">(Last updated on top)</span></h2>

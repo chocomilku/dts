@@ -9,7 +9,7 @@ import {
 } from "@db/models/documents";
 import { db } from "@db/conn";
 import { trackingNumberProvider } from "@utils/trackingNumberProvider";
-import { eq, getTableColumns, desc, sql } from "drizzle-orm";
+import { eq, getTableColumns, desc, sql, SQL, and, asc } from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import {
 	documentLogs as documentLogsModel,
@@ -78,12 +78,30 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 documentRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
 		const userId = c.get("userId");
-		const { assigned } = c.req.query();
+		const query = c.req.query();
 
-		const query = z.coerce.boolean().default(false).safeParse(assigned);
-		if (!query.success) {
+		type SortFilters =
+			| "created-asc"
+			| "created-desc"
+			| "updated-asc"
+			| "updated-desc";
+
+		const querySchema = z.object({
+			limit: z.coerce.number().int().positive().max(50).default(10).catch(10),
+			offset: z.coerce.number().int().nonnegative().default(0).catch(0),
+			department: z.coerce.number().optional().catch(undefined),
+			status: z.enum(["open", "closed"]).optional().catch(undefined),
+			assigned: z.coerce.boolean().default(false).catch(false),
+			sort: z
+				.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
+				.default("updated-desc")
+				.catch("updated-desc"),
+		});
+		const parsedQuery = querySchema.safeParse(query);
+
+		if (!parsedQuery.success) {
 			c.status(400);
-			return c.json(query.error);
+			return c.json(parsedQuery.error);
 		}
 
 		const { departmentId } = getTableColumns(usersModel);
@@ -99,15 +117,50 @@ documentRouter.get("/", sessionAuth("any"), async (c) => {
 			return c.json({ message: "User not found." });
 		}
 
+		// documents query
+
+		const filters: SQL[] = [];
+		if (parsedQuery.data.department) {
+			filters.push(
+				eq(documentsModel.originDepartment, parsedQuery.data.department)
+			);
+		}
+
+		if (parsedQuery.data.status) {
+			filters.push(eq(documentsModel.status, parsedQuery.data.status));
+		}
+
+		if (parsedQuery.data.assigned) {
+			filters.push(
+				sql`${documentsModel.assignedUser} = ${userId} OR ${documentsModel.assignedDepartment} = ${user[0].departmentId}`
+			);
+		}
+
+		const querySortFilter = (filter: SortFilters) => {
+			switch (filter) {
+				case "created-asc":
+					return asc(documentsModel.createdAt);
+
+				case "created-desc":
+					return desc(documentsModel.createdAt);
+
+				case "updated-asc":
+					return asc(documentsModel.lastUpdatedAt);
+
+				case "updated-desc":
+					return desc(documentsModel.lastUpdatedAt);
+				default:
+					return desc(documentsModel.lastUpdatedAt);
+			}
+		};
+
 		const data = await db
 			.select()
 			.from(documentsModel)
-			.where(
-				query.data
-					? sql`${documentsModel.assignedUser} = ${userId} OR ${documentsModel.assignedDepartment} = ${user[0].departmentId}`
-					: undefined
-			)
-			.orderBy(desc(documentsModel.lastUpdatedAt));
+			.where(and(...filters))
+			.limit(parsedQuery.data.limit)
+			.offset(parsedQuery.data.offset)
+			.orderBy(querySortFilter(parsedQuery.data.sort));
 
 		c.status(200);
 		return c.json({ message: "OK", data: data });
