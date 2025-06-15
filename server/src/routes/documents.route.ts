@@ -9,7 +9,7 @@ import {
 } from "@db/models/documents";
 import { db } from "@db/conn";
 import { trackingNumberProvider } from "@utils/trackingNumberProvider";
-import { eq, getTableColumns, desc, sql, SQL, and, asc } from "drizzle-orm";
+import { eq, getTableColumns, desc, sql, SQL, and, asc, or } from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import {
 	documentLogs as documentLogsModel,
@@ -87,11 +87,12 @@ documentRouter.get("/", sessionAuth("any"), async (c) => {
 			| "updated-desc";
 
 		const querySchema = z.object({
-			limit: z.coerce.number().int().positive().max(50).default(10).catch(10),
+			limit: z.coerce.number().int().positive().max(100).default(10).catch(10),
 			offset: z.coerce.number().int().nonnegative().default(0).catch(0),
 			department: z.coerce.number().optional().catch(undefined),
 			status: z.enum(["open", "closed"]).optional().catch(undefined),
 			assigned: z.coerce.boolean().default(false).catch(false),
+			q: z.string().optional().catch(undefined),
 			sort: z
 				.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
 				.default("updated-desc")
@@ -131,9 +132,13 @@ documentRouter.get("/", sessionAuth("any"), async (c) => {
 		}
 
 		if (parsedQuery.data.assigned) {
-			filters.push(
-				sql`${documentsModel.assignedUser} = ${userId} OR ${documentsModel.assignedDepartment} = ${user[0].departmentId}`
+			const assignedFilter = or(
+				eq(documentsModel.assignedUser, userId),
+				eq(documentsModel.assignedDepartment, user[0].departmentId)
 			);
+			if (assignedFilter) {
+				filters.push(assignedFilter);
+			}
 		}
 
 		const querySortFilter = (filter: SortFilters) => {
@@ -154,13 +159,17 @@ documentRouter.get("/", sessionAuth("any"), async (c) => {
 			}
 		};
 
-		const data = await db
+		const sqlQuery = db
 			.select()
 			.from(documentsModel)
 			.where(and(...filters))
 			.limit(parsedQuery.data.limit)
 			.offset(parsedQuery.data.offset)
 			.orderBy(querySortFilter(parsedQuery.data.sort));
+
+		// console.log(sqlQuery.toSQL());
+
+		const data = await sqlQuery;
 
 		c.status(200);
 		return c.json({ message: "OK", data: data });
