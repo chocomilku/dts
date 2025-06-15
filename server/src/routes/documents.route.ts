@@ -20,6 +20,8 @@ import {
 	or,
 	like,
 	exists,
+	count,
+	ne,
 } from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import {
@@ -27,7 +29,7 @@ import {
 	zDocumentLogs,
 } from "@db/models/documentLog";
 import { logMessageProvider } from "@utils/logMessageProvider";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { emptyString } from "@utils/emptyString";
 import { departments as departmentsModel } from "@db/models/departments";
 
@@ -91,7 +93,7 @@ const getAllDocumentsQuerySchema = z.object({
 	offset: z.coerce.number().int().nonnegative().default(0).catch(0),
 	department: z.coerce.number().optional().catch(undefined),
 	status: z.enum(["open", "closed"]).optional().catch(undefined),
-	assigned: z.coerce.boolean().default(false).catch(false),
+	assigned: z.stringbool().optional().catch(undefined),
 	q: z.string().optional().catch(undefined),
 	sort: z
 		.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
@@ -140,11 +142,21 @@ documentRouter.get(
 				filters.push(eq(documentsModel.status, parsedQuery.status));
 			}
 
-			if (parsedQuery.assigned) {
-				const assignedFilter = or(
-					eq(documentsModel.assignedUser, userId),
-					eq(documentsModel.assignedDepartment, user[0].departmentId)
-				);
+			if (parsedQuery.assigned != undefined) {
+				let assignedFilter;
+
+				if (parsedQuery.assigned == true) {
+					assignedFilter = or(
+						eq(documentsModel.assignedUser, userId),
+						eq(documentsModel.assignedDepartment, user[0].departmentId)
+					);
+				} else {
+					assignedFilter = or(
+						ne(documentsModel.assignedUser, userId),
+						ne(documentsModel.assignedDepartment, user[0].departmentId)
+					);
+				}
+
 				if (assignedFilter) {
 					filters.push(assignedFilter);
 				}
@@ -228,10 +240,18 @@ documentRouter.get(
 			}
 			orderByClauses.push(secondaryOrderByClause);
 
+			const filterCondition = filters.length > 0 ? and(...filters) : undefined;
+
+			const totalCountResult = await db
+				.select({ value: count() })
+				.from(documentsModel)
+				.where(filterCondition);
+			const totalCount = totalCountResult[0]?.value || 0;
+
 			const sqlQuery = db
 				.select()
 				.from(documentsModel)
-				.where(filters.length > 0 ? and(...filters) : undefined)
+				.where(filterCondition)
 				.limit(parsedQuery.limit)
 				.offset(parsedQuery.offset)
 				.orderBy(...orderByClauses);
@@ -241,7 +261,17 @@ documentRouter.get(
 			const data = await sqlQuery;
 
 			c.status(200);
-			return c.json({ message: "OK", data: data });
+			return c.json({
+				message: "OK",
+				data: data,
+				pagination: {
+					total: totalCount,
+					limit: parsedQuery.limit,
+					offset: parsedQuery.offset,
+					pageCount: Math.ceil(totalCount / parsedQuery.limit),
+					currentPage: Math.floor(parsedQuery.offset / parsedQuery.limit) + 1,
+				},
+			});
 		} catch (e) {
 			console.error(e);
 			c.status(500);

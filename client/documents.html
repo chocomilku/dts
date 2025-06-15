@@ -105,7 +105,8 @@
                     <div>
                         <label for="assigned" class="form-label"><b>Assigned to me</b></label>
                         <select name="assigned" id="assigned" class="form-select">
-                            <option value="no" selected>No</option>
+                            <option value="" selected>Any</option>
+                            <option value="no">No</option>
                             <option value="yes">Yes</option>
                         </select>
                     </div>
@@ -129,9 +130,15 @@
                     </div>
                 </div>
 
-                <div class="main-content" id="docList">
-                    <h2><b>Documents</b></span></h2>
+                <div class="main-content">
+                    <div id="docList" class="d-flex flex-column gap-2"></div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center" id="paginationControls">
+                            <!-- Pagination items will be inserted here by JavaScript -->
+                        </ul>
+                    </nav>
                 </div>
+
 
             </main>
         </div>

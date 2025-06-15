@@ -6,7 +6,7 @@ import { statusRedirect } from "./statusRedirect.js";
  * @typedef {object} Document
  * @property {number} id
  * @property {string} trackingNumber
- * @property {"open"|"closed"} status
+ * @property {"open"|"closed"} status // Corrected: Ensure this matches the actual data
  * @property {string} title
  * @property {string} type
  * @property {string} details
@@ -20,9 +20,19 @@ import { statusRedirect } from "./statusRedirect.js";
  */
 
 /**
+ * @typedef {object} PaginationInfo
+ * @property {number} total
+ * @property {number} limit
+ * @property {number} offset
+ * @property {number} pageCount
+ * @property {number} currentPage
+ */
+
+/**
  * @typedef {object} DocumentsResponse
  * @property {string} message
  * @property {Document[]} data
+ * @property {PaginationInfo} pagination
  */
 
 const loadDepartments = async () => {
@@ -37,13 +47,13 @@ const loadDepartments = async () => {
         if (statusRedirect(res, "href")) return;
 
         /**
-         * @type {{
-        * message: string,
-        * data: {
-        * id: number;
-        * name: string;
-        * }[]}
-        * }
+         * @type {{ 
+        *  message: string,
+        *  data: { 
+        *    id: number;
+        *    name: string;
+        *  }[] 
+        * }}
         */
         const data = await res.json();
 
@@ -68,7 +78,83 @@ const loadDepartments = async () => {
     }
 }
 
-const fetchAndRenderDocuments = async () => {
+const renderPaginationControls = (pagination) => {
+    const paginationUl = document.querySelector(".pagination");
+    if (!paginationUl) return;
+
+    paginationUl.innerHTML = ""; // Clear existing controls
+
+    if (!pagination) {
+        // Hide pagination if no data
+        paginationUl.classList.add("d-none");
+        return;
+    }
+    paginationUl.classList.remove("d-none");
+
+
+    const { currentPage, pageCount } = pagination;
+
+    // Previous button
+    const prevLi = document.createElement("li");
+    prevLi.classList.add("page-item");
+    if (currentPage === 1) {
+        prevLi.classList.add("disabled");
+    }
+    const prevA = document.createElement("a");
+    prevA.classList.add("page-link");
+    prevA.href = "#";
+    prevA.innerText = "Previous";
+    prevA.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (currentPage > 1) {
+            fetchAndRenderDocuments(currentPage - 1);
+        }
+    });
+    prevLi.appendChild(prevA);
+    paginationUl.appendChild(prevLi);
+
+    // Page numbers
+    // Simplified: show all page numbers. For many pages, a more complex logic (e.g., ellipsis) would be needed.
+    for (let i = 1; i <= pageCount; i++) {
+        const pageLi = document.createElement("li");
+        pageLi.classList.add("page-item");
+        if (i === currentPage) {
+            pageLi.classList.add("active");
+        }
+        const pageA = document.createElement("a");
+        pageA.classList.add("page-link");
+        pageA.href = "#";
+        pageA.innerText = i.toString();
+        pageA.addEventListener("click", (e) => {
+            e.preventDefault();
+            fetchAndRenderDocuments(i);
+        });
+        pageLi.appendChild(pageA);
+        paginationUl.appendChild(pageLi);
+    }
+
+    // Next button
+    const nextLi = document.createElement("li");
+    nextLi.classList.add("page-item");
+    if (currentPage === pageCount) {
+        nextLi.classList.add("disabled");
+    }
+    const nextA = document.createElement("a");
+    nextA.classList.add("page-link");
+    nextA.href = "#";
+    nextA.innerText = "Next";
+    nextA.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (currentPage < pageCount) {
+            fetchAndRenderDocuments(currentPage + 1);
+        }
+    });
+    nextLi.appendChild(nextA);
+    paginationUl.appendChild(nextLi);
+};
+
+
+const fetchAndRenderDocuments = async (pageNumber = 1) => {
     const docList = document.getElementById("docList");
     if (!docList) return;
 
@@ -93,15 +179,19 @@ const fetchAndRenderDocuments = async () => {
 
     if (assignedEl && assignedEl instanceof HTMLSelectElement && assignedEl.value === "yes") {
         params.append("assigned", "true");
+    } else if (assignedEl && assignedEl instanceof HTMLSelectElement && assignedEl.value === "no") {
+        params.append("assigned", "false");
     }
+
 
     if (sortEl && sortEl instanceof HTMLSelectElement && sortEl.value) {
         params.append("sort", sortEl.value);
     }
 
-    if (entriesEl && entriesEl instanceof HTMLSelectElement && entriesEl.value) {
-        params.append("limit", entriesEl.value);
-    }
+    const limit = (entriesEl && entriesEl instanceof HTMLSelectElement && parseInt(entriesEl.value)) || 10;
+    params.append("limit", limit.toString());
+    params.append("offset", ((pageNumber - 1) * limit).toString());
+
 
     if (searchEl && searchEl instanceof HTMLInputElement && searchEl.value.trim()) {
         params.append("q", searchEl.value.trim());
@@ -110,6 +200,9 @@ const fetchAndRenderDocuments = async () => {
     try {
         // Show loading state
         docList.innerHTML = `<p class="text-center"><span class="spinner-border spinner-border-sm" role="status"></span>Loading documents...</p>`;
+        const paginationUl = document.querySelector(".pagination");
+        if (paginationUl) paginationUl.classList.add("d-none"); // Hide pagination during load
+
 
         // Fetch documents with filters
         const res = await fetch(`${API_URL}/api/documents?${params.toString()}`, {
@@ -118,14 +211,16 @@ const fetchAndRenderDocuments = async () => {
         if (statusRedirect(res, "href")) return;
 
         /** @type {DocumentsResponse} */
-        const docs = await res.json();
+        const docsResponse = await res.json();
+        const { data: docs, pagination } = docsResponse;
 
         // Clear existing content
-        docList.innerHTML = `<h2><b>Documents</b> <span class="fs-6">(${docs.data.length} results)</span></h2>`;
+        docList.innerHTML = `<h2><b>Documents</b> <span class="fs-6">(${pagination.total} results)</span></h2>`;
 
         // No results case
-        if (docs.data.length === 0) {
+        if (docs.length === 0) {
             docList.innerHTML += `<div class="alert alert-info mt-3">No documents found matching your filters.</div>`;
+            renderPaginationControls(null); // Clear/hide pagination
             return;
         }
 
@@ -133,7 +228,7 @@ const fetchAndRenderDocuments = async () => {
         let threadCount = 1;
 
         // Render documents
-        for (const doc of docs.data) {
+        for (const doc of docs) {
             // Fetch related data
             const [originDept, author, signatory] = await Promise.all([
                 getDepartmentData(doc.originDepartment),
@@ -191,53 +286,52 @@ const fetchAndRenderDocuments = async () => {
             `;
             docList.appendChild(threadItem);
         }
+        renderPaginationControls(pagination);
+
     } catch (e) {
         console.error("Failed to fetch documents:", e);
         docList.innerHTML = `
             <h2><b>Documents</b></h2>
             <div class="alert alert-danger">Error loading documents. Please try again.</div>
           `;
+        renderPaginationControls(null); // Clear/hide pagination on error
     }
-}
+};
 
-// Initialize page
-document.addEventListener("DOMContentLoaded", async () => {
-    // First load departments in the dropdown
-    await loadDepartments();
+document.addEventListener("DOMContentLoaded", async () => { // Made async
+    try {
+        await loadDepartments();
+        await fetchAndRenderDocuments(); // Initial fetch (page 1) - await restored
+    } catch (error) {
+        console.error("Error during initial page load:", error);
+        // Optionally, display a user-friendly message in the UI
+        const docList = document.getElementById("docList");
+        if (docList) {
+            docList.innerHTML = `
+                <h2><b>Documents</b></h2>
+                <div class="alert alert-danger">Error initializing page. Please try refreshing.</div>
+            `;
+        }
+        const paginationUl = document.querySelector(".pagination");
+        if (paginationUl) paginationUl.classList.add("d-none");
+    }
 
-    // Initial document fetch
-    await fetchAndRenderDocuments();
+    // Add event listeners for filters to reset to page 1
+    document.getElementById("department")?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    document.getElementById("status")?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    document.getElementById("assigned")?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    document.getElementById("sort")?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    document.getElementById("entries")?.addEventListener("change", () => fetchAndRenderDocuments(1));
 
-    // Add event listeners to all filter elements
-    const filterElements = [
-        "department",
-        "status",
-        "assigned",
-        "sort",
-        "entries"
-    ];
+    const searchInput = document.getElementById("search");
+    const searchButton = document.getElementById("searchBtn"); // Corrected ID from search-button to searchBtn
 
-    filterElements.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener("change", fetchAndRenderDocuments);
+    const performSearch = () => fetchAndRenderDocuments(1);
+
+    searchButton?.addEventListener("click", performSearch);
+    searchInput?.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            performSearch();
         }
     });
-
-    // Add event listener to search button
-    const searchBtn = document.getElementById("searchBtn");
-    if (searchBtn) {
-        searchBtn.addEventListener("click", fetchAndRenderDocuments);
-    }
-
-    // Optional: Add event listener for Enter key in search box
-    const searchInput = document.getElementById("search");
-    if (searchInput) {
-        searchInput.addEventListener("keypress", (e) => {
-            if (e instanceof KeyboardEvent && e.key === "Enter") {
-                e.preventDefault();
-                fetchAndRenderDocuments();
-            }
-        });
-    }
 });
