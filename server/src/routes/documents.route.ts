@@ -19,6 +19,7 @@ import {
 	asc,
 	or,
 	like,
+	exists,
 } from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import {
@@ -149,33 +150,83 @@ documentRouter.get(
 				}
 			}
 
+			const orderByClauses = [];
+
 			if (parsedQuery.q) {
 				const searchTerm = `%${parsedQuery.q}%`;
 				const searchFilter = or(
 					like(documentsModel.title, searchTerm),
-					like(documentsModel.trackingNumber, searchTerm)
+					like(documentsModel.trackingNumber, searchTerm),
+					like(documentsModel.type, searchTerm),
+					exists(
+						db
+							.select({ val: sql`1` })
+							.from(usersModel)
+							.where(
+								and(
+									eq(usersModel.id, documentsModel.author), // Correlate with the document's author
+									like(usersModel.name, searchTerm)
+								)
+							)
+					),
+					exists(
+						db
+							.select({ val: sql`1` })
+							.from(usersModel)
+							.where(
+								and(
+									eq(usersModel.id, documentsModel.signatory), // Correlate with the document's signatory
+									like(usersModel.name, searchTerm)
+								)
+							)
+					),
+					sql`(${documentsModel.assignedUser} IS NOT NULL AND EXISTS (
+                        SELECT 1 FROM ${usersModel} users_assigned
+                        WHERE users_assigned.id = ${documentsModel.assignedUser}
+                        AND users_assigned.name LIKE ${searchTerm}
+                    ))`,
+					sql`(${documentsModel.assignedDepartment} IS NOT NULL AND EXISTS (
+                        SELECT 1 FROM ${departmentsModel} depts_assigned
+                        WHERE depts_assigned.id = ${documentsModel.assignedDepartment}
+                        AND depts_assigned.name LIKE ${searchTerm}
+                    ))`
 				);
 
 				if (searchFilter) filters.push(searchFilter);
+
+				// Define the priority CASE statement for ORDER BY
+				// (title -> tracking number) -> author -> signatory -> assigned user -> assigned department -> (default) sort filters
+				const priorityCaseStatement = sql`
+                    CASE
+                        WHEN (${documentsModel.title} LIKE ${searchTerm} OR ${documentsModel.trackingNumber} LIKE ${searchTerm}) THEN 1
+                        WHEN EXISTS (SELECT 1 FROM ${usersModel} u_auth WHERE u_auth.id = ${documentsModel.author} AND u_auth.name LIKE ${searchTerm}) THEN 2
+                        WHEN EXISTS (SELECT 1 FROM ${usersModel} u_sig WHERE u_sig.id = ${documentsModel.signatory} AND u_sig.name LIKE ${searchTerm}) THEN 3
+                        WHEN (${documentsModel.assignedUser} IS NOT NULL AND EXISTS (SELECT 1 FROM ${usersModel} u_as_usr WHERE u_as_usr.id = ${documentsModel.assignedUser} AND u_as_usr.name LIKE ${searchTerm})) THEN 4
+                        WHEN (${documentsModel.assignedDepartment} IS NOT NULL AND EXISTS (SELECT 1 FROM ${departmentsModel} d_as_dpt WHERE d_as_dpt.id = ${documentsModel.assignedDepartment} AND d_as_dpt.name LIKE ${searchTerm})) THEN 5
+                        ELSE 6
+                    END
+                `;
+				orderByClauses.push(priorityCaseStatement); // Primary sort by hit type priority
 			}
 
-			const querySortFilter = (filter: SortFilters) => {
-				switch (filter) {
-					case "created-asc":
-						return asc(documentsModel.createdAt);
+			let secondaryOrderByClause;
 
-					case "created-desc":
-						return desc(documentsModel.createdAt);
-
-					case "updated-asc":
-						return asc(documentsModel.lastUpdatedAt);
-
-					case "updated-desc":
-						return desc(documentsModel.lastUpdatedAt);
-					default:
-						return desc(documentsModel.lastUpdatedAt);
-				}
-			};
+			switch (parsedQuery.sort) {
+				case "created-asc":
+					secondaryOrderByClause = asc(documentsModel.createdAt);
+					break;
+				case "created-desc":
+					secondaryOrderByClause = desc(documentsModel.createdAt);
+					break;
+				case "updated-asc":
+					secondaryOrderByClause = asc(documentsModel.lastUpdatedAt);
+					break;
+				case "updated-desc":
+				default:
+					secondaryOrderByClause = desc(documentsModel.lastUpdatedAt);
+					break;
+			}
+			orderByClauses.push(secondaryOrderByClause);
 
 			const sqlQuery = db
 				.select()
@@ -183,7 +234,7 @@ documentRouter.get(
 				.where(filters.length > 0 ? and(...filters) : undefined)
 				.limit(parsedQuery.limit)
 				.offset(parsedQuery.offset)
-				.orderBy(querySortFilter(parsedQuery.sort));
+				.orderBy(...orderByClauses);
 
 			// console.log(sqlQuery.toSQL());
 
