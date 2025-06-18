@@ -1,19 +1,8 @@
+/**@import {DepartmentsResponse, Department, UsersResponse, User} from "./constants.js" */
 import { API_URL } from "./constants.js";
 import { statusRedirect } from "./statusRedirect.js";
 
 const deptCache = new Map();
-
-/**
- * @typedef {object} DepartmentData
- * @property {number} id - Department ID
- * @property {string} name - Department name
- */
-
-/**
- * @typedef {object} DepartmentResponse
- * @property {string} message - Status message
- * @property {DepartmentData[]} data - Array with one department object
- */
 
 /**
  * Fetches and caches a department's data from the API.
@@ -23,7 +12,7 @@ const deptCache = new Map();
  *
  * @async
  * @param {number} id - Department ID to fetch.
- * @returns {Promise<DepartmentData>} Resolves with the department data object.
+ * @returns {Promise<Department>} Resolves with the department data object.
 */
 export async function getDepartmentData(id) {
     if (deptCache.has(id)) return deptCache.get(id);
@@ -31,7 +20,7 @@ export async function getDepartmentData(id) {
     const promise = fetch(`${API_URL}/api/departments/${id}`, { credentials: "include" })
         .then(async res => {
             if (statusRedirect(res, "href")) throw new Error("Redirected");
-            /** @type {DepartmentResponse} */
+            /** @type {DepartmentsResponse} */
             const data = await res.json();
             const dept = data.data[0];
             deptCache.set(id, Promise.resolve(dept));
@@ -56,14 +45,7 @@ const userCache = new Map();
  *
  * @async
  * @param {number|string} id - User ID to fetch, or "@me" for current user.
- * @returns {Promise<{
- *   department: { id: number, name: string } | null,
- *   id: number,
- *   role: "superadmin" | "admin" | "clerk" | "officer",
- *   name: string,
- *   username: string,
- *   createdAt: string | null
- * }>} Resolves with the user data object.
+ * @returns {Promise<User>} Resolves with the user data object.
  */
 export async function getUserData(id) {
     if (userCache.has(id)) return userCache.get(id);
@@ -72,16 +54,8 @@ export async function getUserData(id) {
         credentials: "include"
     }).then(async res => {
         if (statusRedirect(res, "href")) throw new Error("Redirected");
-        /**
-         * @type {{message: string, data: {
-         * department: { id: number; name: string } | null;
-         * id: number;
-         * role: "superadmin" | "admin" | "clerk" | "officer";
-         * name: string;
-         * username: string;
-         * createdAt: string | null;
-         * }[]}}
-         */
+
+        /**@type {UsersResponse} */
         const data = await res.json();
         const user = data.data[0];
         userCache.set(id, Promise.resolve(user));
@@ -96,6 +70,16 @@ export async function getUserData(id) {
 }
 
 
+/**
+ * Badge types for badgeColorProvider.
+ * @typedef {"open"|"reopen"|"created"|"approve"|"transfer"|"receive"|"assign"|"closed"|"deny"|string} BadgeType
+ */
+
+/**
+ * Provides Bootstrap badge color classes based on type.
+ * @param {BadgeType} type
+ * @returns {string}
+ */
 export const badgeColorProvider = (type) => {
     // bg-success-subtle text-success-emphasis
     switch (type) {

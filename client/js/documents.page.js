@@ -1,39 +1,8 @@
+/** @import { DocumentsResponse, DepartmentsResponse } from "./constants.js" */
 import { API_URL } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
-/**
- * @typedef {object} Document
- * @property {number} id
- * @property {string} trackingNumber
- * @property {"open"|"closed"} status // Corrected: Ensure this matches the actual data
- * @property {string} title
- * @property {string} type
- * @property {string} details
- * @property {number} signatory
- * @property {number} author
- * @property {number} originDepartment
- * @property {number|null} assignedUser
- * @property {number|null} assignedDepartment
- * @property {string|null} createdAt
- * @property {string|null} lastUpdatedAt
- */
-
-/**
- * @typedef {object} PaginationInfo
- * @property {number} total
- * @property {number} limit
- * @property {number} offset
- * @property {number} pageCount
- * @property {number} currentPage
- */
-
-/**
- * @typedef {object} DocumentsResponse
- * @property {string} message
- * @property {Document[]} data
- * @property {PaginationInfo} pagination
- */
 
 const loadDepartments = async () => {
     const departmentSelect = document.getElementById("department");
@@ -46,15 +15,7 @@ const loadDepartments = async () => {
         });
         if (statusRedirect(res, "href")) return;
 
-        /**
-         * @type {{ 
-        *  message: string,
-        *  data: { 
-        *    id: number;
-        *    name: string;
-        *  }[] 
-        * }}
-        */
+        /** @type {DepartmentsResponse} */
         const data = await res.json();
 
         const allOption = document.createElement("option");

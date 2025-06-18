@@ -1,3 +1,4 @@
+/** @import { DepartmentsResponse } from "./constants.js" */
 import { API_URL } from "./constants.js";
 import { getUserData } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
@@ -9,12 +10,7 @@ const loadDepartments = async () => {
         })
         if (statusRedirect(res, "href")) return;
 
-        /**
-         * @type {{message: string, data:{
-         * id: number;
-         * name: string;
-         * }[]}}
-         */
+        /**@type {DepartmentsResponse} */
         const departments = await res.json();
 
         // Select the container for thread items

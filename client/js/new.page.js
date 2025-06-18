@@ -1,6 +1,7 @@
 // @ts-nocheck
 // jquery 😭😭😭
 
+/**@import {UsersResponse} from "./constants.js" */
 import { API_URL } from "./constants.js";
 import { statusRedirect } from "./statusRedirect.js";
 
@@ -12,18 +13,7 @@ const getUsers = async () => {
         })
         if (statusRedirect(res, "href")) return;
 
-        /**
-         * @type {{message: string, data: {
-         * department: {
-         *  id: number;
-         *  name: string} | null;
-         * id: number;
-         * role: "superadmin" | "admin" | "clerk" | "officer";
-         * name: string;
-         * username: string;
-         * createdAt: string | null;
-         * }[]}}
-        */
+        /**@type {UsersResponse} */
         const users = await res.json();
 
         let data = users.data.map((u) => {

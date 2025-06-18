@@ -1,35 +1,7 @@
+/** @import { DocumentsResponse, DocumentCountResponse } from "./constants.js" */
 import { API_URL } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
-
-/**
- * @typedef {object} Document
- * @property {number} id
- * @property {string} trackingNumber
- * @property {"open"|"closed"} status
- * @property {string} title
- * @property {string} type
- * @property {string} details
- * @property {number} signatory
- * @property {number} author
- * @property {number} originDepartment
- * @property {number|null} assignedUser
- * @property {number|null} assignedDepartment
- * @property {string|null} createdAt
- * @property {string|null} lastUpdatedAt
- */
-
-/**
- * @typedef {object} DocumentsResponse
- * @property {string} message
- * @property {Document[]} data
- */
-
-/**
- * @typedef {object} DocumentCountResponse
- * @property {string} message
- * @property {{ openCount: number, closedCount: number, assignedCount: number }} data
- */
 
 document.addEventListener("DOMContentLoaded", async () => {
     // Fetch and display document counts

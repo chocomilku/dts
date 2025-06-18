@@ -1,77 +1,141 @@
+/**
+ * Login Page Module
+ * Handles form submission and user authentication
+ */
 import { API_URL } from "./constants.js";
-import { redirect } from "./statusRedirect.js"
+import { redirect } from "./statusRedirect.js";
 
-(() => {
-    const forms = document.getElementsByTagName("form");
-    const username = document.getElementById("username")
-    const password = document.getElementById("password")
-    if (!(username instanceof HTMLInputElement)) return;
-    if (!(password instanceof HTMLInputElement)) return;
+/**
+ * Validates form fields and updates their UI state
+ * @param {HTMLInputElement[]} fields - Input fields to validate
+ * @param {boolean} resetMessages - Whether to reset error messages to their original state
+ * @param {string|null} errorMessage - Custom error message to display for invalid fields
+ */
+function validateFields(fields, resetMessages = true, errorMessage = null) {
+    fields.forEach(field => {
+        // Get feedback element
+        const feedbackEl = field.nextElementSibling;
+
+        // Update message if it's an HTML element
+        if (feedbackEl instanceof HTMLElement) {
+            if (resetMessages) {
+                feedbackEl.innerText = feedbackEl.dataset.originalMessage || "";
+            } else if (errorMessage) {
+                feedbackEl.innerText = errorMessage;
+            }
+        }
+
+        // Update field classes based on validity
+        if (field.checkValidity()) {
+            field.classList.remove("is-invalid");
+            field.classList.add("is-valid");
+        } else {
+            field.classList.remove("is-valid");
+            field.classList.add("is-invalid");
+        }
+    });
+}
+
+/**
+ * Updates the submit button state
+ * @param {HTMLButtonElement} button - The form submit button
+ * @param {boolean} loading - Whether to show loading state
+ * @param {string|null} customText - Custom text to display
+ */
+function updateSubmitButton(button, loading = false, customText = null) {
+    if (!button) return;
+
+    if (loading) {
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Signing In...`;
+    } else if (customText) {
+        button.disabled = true;
+        button.innerHTML = customText;
+    } else {
+        button.disabled = false;
+        button.innerHTML = "Log In";
+    }
+}
+
+/**
+ * Handles the login form submission
+ * @param {Event} event - The form submit event
+ */
+async function handleLoginSubmit(event) {
+    event.preventDefault();
+
+    // Get form and input elements
+    if (!(event.target instanceof HTMLFormElement)) {
+        console.error("Event target is not a form element");
+        return;
+    }
+
+    const form = event.target;
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+    const submitButton = document.getElementById("form-submit");
+
+    // Validate input elements
+    if (!(username instanceof HTMLInputElement) ||
+        !(password instanceof HTMLInputElement) ||
+        !(submitButton instanceof HTMLButtonElement)) {
+        console.error("Required form elements not found or have incorrect types");
+        return;
+    }
 
     const formFields = [username, password];
 
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', async event => {
-            event.preventDefault()
-            if (!form.checkValidity()) {
-                event.stopPropagation()
-                formFields.forEach((f) => {
-                    if (f.nextElementSibling && f.nextElementSibling instanceof HTMLElement) {
-                        f.nextElementSibling.innerText = f.nextElementSibling.dataset["originalMessage"] ?? ""
-                    }
+    // Handle form validation failure
+    if (!form.checkValidity()) {
+        event.stopPropagation();
+        validateFields(formFields, true);
+        return;
+    }
 
-                    if (f.checkValidity()) {
-                        f.classList.remove("is-invalid");
-                        f.classList.add("is-valid");
-                    } else {
-                        f.classList.remove("is-valid");
-                        f.classList.add("is-invalid");
-                    }
-                })
-            } else {
-                const btn = document.getElementById("form-submit");
-                if (!btn) return;
-                if (!(btn instanceof HTMLButtonElement)) return;
+    // Show loading state
+    updateSubmitButton(submitButton, true);
 
-                btn.disabled = true;
-                btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                  Signing In...`
+    try {
+        // Send login request
+        const response = await fetch(`${API_URL}/api/login`, {
+            method: "POST",
+            body: new URLSearchParams({
+                username: username.value,
+                password: password.value
+            }),
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            credentials: "include"
+        });
 
-                if (!username) return;
-                if (!password) return;
+        // Parse response
+        /** @type {{ message: string }} */
+        const data = await response.json();
 
-                const res = await fetch(`${API_URL}/api/login`, {
-                    method: "POST",
-                    body: new URLSearchParams({ username: username.value, password: password.value }),
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    credentials: "include"
-                })
+        // Handle response based on success/failure
+        if (!response.ok) {
+            updateSubmitButton(submitButton, false);
+            validateFields(formFields, false, data.message);
+        } else {
+            updateSubmitButton(submitButton, false, data.message);
+            redirect("/dashboard", "replace");
+        }
+    } catch (error) {
+        console.error("Login failed:", error);
+        updateSubmitButton(submitButton, false);
+        validateFields(formFields, false, "Network error. Please try again.");
+    }
+}
 
-                /**
-                 * @type {{ message: string }}
-                 */
-                const data = await res.json();
+// Initialize login form when document is ready
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("loginForm");
 
-                if (!res.ok) {
-                    btn.disabled = false;
-                    btn.innerHTML = `Log In`
-                    formFields.forEach(async (f) => {
-                        if (f.nextElementSibling && f.nextElementSibling instanceof HTMLElement) {
-                            f.nextElementSibling.innerText = data.message
-                        }
-
-                        f.classList.remove("is-valid");
-                        f.classList.add("is-invalid");
-                    })
-                } else {
-                    btn.disabled = true;
-                    btn.innerHTML = data.message;
-                    redirect("/dashboard", "replace");
-                }
-
-            }
-        }, false)
-    })
-})()
+    if (loginForm) {
+        loginForm.addEventListener("submit", handleLoginSubmit);
+    } else {
+        console.error("Login form not found");
+    }
+});

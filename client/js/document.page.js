@@ -1,13 +1,21 @@
-// @ts-nocheck
+/**
+ * Document Page Module - Displays and manages document details, actions, and history
+ * @module document-page
+ * @import { DocumentsResponse, DepartmentsResponse, UsersResponse, DocumentLogsResponse, Document, User } from "./constants.js"
+ */
 import { API_URL } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
-
-const actionAlertPlaceholder = document.getElementById("actionAlertPlaceholder");
-
+/**
+ * Displays an alert message in the action alert placeholder
+ * @param {string} message - The message to display
+ * @param {"success"|"danger"|"warning"|"info"} type - The type of alert
+ */
 function showActionAlert(message, type = "danger") {
+    const actionAlertPlaceholder = window.document.getElementById("actionAlertPlaceholder");
     if (!actionAlertPlaceholder) return;
+
     actionAlertPlaceholder.innerHTML = `
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
             ${message}
@@ -16,169 +24,220 @@ function showActionAlert(message, type = "danger") {
     `;
 }
 
-const loadPageData = async () => {
-    //#region fetching
+/**
+ * Gets the tracking number from the URL
+ * @returns {string} The document tracking number
+ */
+function getTrackingNumberFromUrl() {
     const urlParts = window.location.pathname.split('/');
-    const tn = urlParts[urlParts.length - 1];
+    return urlParts[urlParts.length - 1];
+}
 
-    const res = await fetch(`${API_URL}/api/documents/${tn}`, {
-        credentials: "include"
-    })
+/**
+ * Fetches the document data and current user
+ * @returns {Promise<{document: Document, currentUser: User} | null>} The document and current user or null if error
+ */
+async function fetchDocumentData() {
+    try {
+        const trackingNumber = getTrackingNumberFromUrl();
 
-    if (statusRedirect(res, "href")) return;
+        const res = await fetch(`${API_URL}/api/documents/${trackingNumber}`, {
+            credentials: "include"
+        });
 
-    /**
-     * @type{{message: string, data: {
-    id: number;
-    trackingNumber: string;
-    status: "open" | "closed";
-    title: string;
-    type: string;
-    details: string;
-    signatory: number;
-    author: number;
-    originDepartment: number;
-    assignedUser: number | null;
-    assignedDepartment: number | null;
-    createdAt: string | null;
-    lastUpdatedAt: string | null;
-}[]}}
-     */
-    const doc = await res.json();
-
-    const me = await getUserData("@me");
-
-    //#endregion
-
-    //#region doc details
-    // declarations
-    const docTrackingNumber = document.getElementById("docTrackingNumber");
-    const docTitle = document.getElementById("docTitle");
-    const docDetails = document.getElementById("docDetails");
-    const docAttributes = document.getElementById("docAttributes");
-
-    // processing
-    const originDeptData = await getDepartmentData(doc.data[0].originDepartment)
-    const authorData = await getUserData(doc.data[0].author);
-    const signatoryData = await getUserData(doc.data[0].signatory);
-    let assignedTo = "";
-
-    let isAssignedToMe = false;
-    if (doc.data[0].assignedDepartment != null) {
-        const deptData = await getDepartmentData(doc.data[0].assignedDepartment);
-        assignedTo = deptData.name;
-        if (me.department && me.department.id === doc.data[0].assignedDepartment) {
-            isAssignedToMe = true;
+        if (statusRedirect(res, "href")) return null;
+        if (!res.ok) {
+            showActionAlert("Failed to fetch document data");
+            return null;
         }
-    } else if (doc.data[0].assignedUser != null) {
-        const userData = await getUserData(doc.data[0].assignedUser);
-        assignedTo = `${userData.name} (${userData.department?.name})`;
-        if (me.id === doc.data[0].assignedUser) {
-            isAssignedToMe = true;
+
+        /** @type {DocumentsResponse} */
+        const docResponse = await res.json();
+
+        if (!docResponse?.data?.length) {
+            showActionAlert("No document data found");
+            return null;
         }
-    } else {
-        assignedTo = "No one";
+
+        const currentUser = await getUserData("@me");
+
+        return {
+            document: docResponse.data[0],
+            currentUser
+        };
+    } catch (error) {
+        console.error("Error fetching document data:", error);
+        showActionAlert("An error occurred while loading document data");
+        return null;
     }
+}
 
-    const attributes = [
-        { key: "Origin Department", value: originDeptData.name },
-        { key: "Document Type", value: doc.data[0].type },
-        { key: "Author", value: `${authorData.name} (${authorData.department?.name})` },
-        { key: "Currently Assigned to", value: assignedTo },
-        { key: "Signatory", value: `${signatoryData.name} (${signatoryData.department?.name})` },
-        { key: "Created At", value: doc.data[0].createdAt },
-        { key: "Last Updated At", value: doc.data[0].lastUpdatedAt },
-    ]
+/**
+ * Formats the first letter of a string to uppercase
+ * @param {string} str - The string to capitalize
+ * @returns {string} The capitalized string
+ */
+function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
-    // input content
-    if (docTrackingNumber) {
-        docTrackingNumber.innerText = doc.data[0].trackingNumber;
-    }
+/**
+ * Renders the document details section
+ * @param {Document} doc - The document object
+ * @param {User} currentUser - The current user
+ */
+async function renderDocumentDetails(doc, currentUser) {
+    try {
+        // DOM elements
+        const docTrackingNumber = window.document.getElementById("docTrackingNumber");
+        const docTitle = window.document.getElementById("docTitle");
+        const docDetails = window.document.getElementById("docDetails");
+        const docAttributes = window.document.getElementById("docAttributes");
 
-    // Remove any existing badge (if re-rendered)
-    const next = docTrackingNumber.nextSibling;
-    if (next && next.nodeType === Node.ELEMENT_NODE && next.classList.contains('badge')) {
-        next.remove();
-    }
+        if (!docTrackingNumber || !docTitle || !docDetails || !docAttributes) {
+            console.error("Document detail elements not found");
+            return;
+        }
 
-    if (isAssignedToMe) {
-        const assignedBadge = document.createElement("span");
-        assignedBadge.className = `badge ${badgeColorProvider("assign")} rounded-pill ms-2`;
-        assignedBadge.textContent = "Assigned";
-        docTrackingNumber.after(assignedBadge);
-    }
+        // Fetch related data
+        const [originDeptData, authorData, signatoryData] = await Promise.all([
+            getDepartmentData(doc.originDepartment),
+            getUserData(doc.author),
+            getUserData(doc.signatory)
+        ]);
 
-    // Add status badge
-    const badge = document.createElement("span");
-    badge.className = `badge ${badgeColorProvider(doc.data[0].status)} rounded-pill ms-2`;
-    badge.textContent = doc.data[0].status.charAt(0).toUpperCase() + doc.data[0].status.slice(1);
-    docTrackingNumber.after(badge);
+        // Process assignment information
+        let assignedTo = "No one";
+        let isAssignedToMe = false;
 
+        if (doc.assignedDepartment != null) {
+            try {
+                const deptData = await getDepartmentData(doc.assignedDepartment);
+                assignedTo = deptData?.name || "Unknown Department";
 
+                if (currentUser.department && currentUser.department.id === doc.assignedDepartment) {
+                    isAssignedToMe = true;
+                }
+            } catch (error) {
+                console.error("Error fetching assigned department:", error);
+            }
+        } else if (doc.assignedUser != null) {
+            try {
+                const userData = await getUserData(doc.assignedUser);
+                assignedTo = `${userData?.name || "Unknown"} (${userData?.department?.name || "No Department"})`;
 
-    if (docTitle) {
-        docTitle.innerText = doc.data[0].title;
-    }
+                if (currentUser.id === doc.assignedUser) {
+                    isAssignedToMe = true;
+                }
+            } catch (error) {
+                console.error("Error fetching assigned user:", error);
+            }
+        }
 
-    if (docDetails) {
-        docDetails.innerHTML = doc.data[0].details;
-    }
+        // Document attributes
+        const attributes = [
+            { key: "Origin Department", value: originDeptData?.name || "Unknown" },
+            { key: "Document Type", value: doc.type || "Unspecified" },
+            { key: "Author", value: `${authorData?.name || "Unknown"} (${authorData?.department?.name || "No Department"})` },
+            { key: "Currently Assigned to", value: assignedTo },
+            { key: "Signatory", value: `${signatoryData?.name || "Unknown"} (${signatoryData?.department?.name || "No Department"})` },
+            { key: "Created At", value: doc.createdAt || "Unknown" },
+            { key: "Last Updated At", value: doc.lastUpdatedAt || "Unknown" },
+        ];
 
-    let docAttributesValue = "";
-    attributes.forEach((k) => {
-        const val = `<div><b>${k.key}</b> <span>${k.value}</span></div>`
-        docAttributesValue += val;
-    })
+        // Update DOM content
+        docTrackingNumber.innerText = doc.trackingNumber;
 
-    if (docAttributes) {
+        // Remove any existing badges (if re-rendered)
+        const siblings = [];
+        let next = docTrackingNumber.nextSibling;
+        while (next) {
+            if (next.nodeType === Node.ELEMENT_NODE && next instanceof Element && next.classList.contains('badge')) {
+                siblings.push(next);
+            }
+            next = next.nextSibling;
+        }
+        siblings.forEach(sibling => sibling.remove());
+
+        // Add status badge
+        const badge = window.document.createElement("span");
+        badge.className = `badge ${badgeColorProvider(doc.status)} rounded-pill ms-2`;
+        badge.textContent = capitalizeFirst(doc.status);
+        docTrackingNumber.after(badge);
+
+        // Add assigned badge if applicable
+        if (isAssignedToMe) {
+            const assignedBadge = window.document.createElement("span");
+            assignedBadge.className = `badge ${badgeColorProvider("assign")} rounded-pill ms-2`;
+            assignedBadge.textContent = "Assigned";
+            badge.after(assignedBadge);
+        }
+
+        docTitle.innerText = doc.title || "Untitled Document";
+        docDetails.innerHTML = doc.details || "";
+
+        // Build attributes HTML
+        let docAttributesValue = "";
+        attributes.forEach((attr) => {
+            docAttributesValue += `<div><b>${attr.key}</b> <span>${attr.value}</span></div>`;
+        });
+
         docAttributes.innerHTML = docAttributesValue;
+
+    } catch (error) {
+        console.error("Error rendering document details:", error);
+        showActionAlert("Error displaying document details");
     }
+}
 
+/**
+ * Renders the document action buttons based on permissions
+ * @param {Document} doc - The document object
+ * @param {User} currentUser - The current user
+ */
+function renderDocumentActionButtons(doc, currentUser) {
+    const buttonRows = window.document.getElementById("buttonRows");
+    if (!buttonRows) return;
 
+    try {
+        // Clear existing buttons
+        buttonRows.innerHTML = "";
 
-    //#endregion
-
-    //#region doc action buttons
-    // Insert Open/Close button based on status and permissions
-
-    const buttonRows = document.getElementById("buttonRows");
-    if (buttonRows) {
-        const isSuperAdmin = me.role === "superadmin";
-        const isSignatory = me.id === doc.data[0].signatory;
-        const isAuthor = me.id === doc.data[0].author;
-        const isOpen = doc.data[0].status === "open";
+        // Permission checks
+        const isSuperAdmin = currentUser.role === "superadmin";
+        const isSignatory = currentUser.id === doc.signatory;
+        const isAuthor = currentUser.id === doc.author;
+        const isOpen = doc.status === "open";
 
         // Permission logic matches backend:
         // - To close: superadmin OR signatory OR author
         // - To open: superadmin OR author
-        let canEdit = false;
-        if (isOpen) {
-            canEdit = isSuperAdmin || isSignatory || isAuthor;
-        } else {
-            canEdit = isSuperAdmin || isAuthor;
-        }
+        const canEdit = isOpen
+            ? (isSuperAdmin || isSignatory || isAuthor)
+            : (isSuperAdmin || isAuthor);
 
-        const btn = document.createElement("button");
+        // Create button
+        const btn = window.document.createElement("button");
         btn.type = "button";
         btn.className = isOpen ? "btn btn-danger" : "btn btn-success";
         btn.textContent = isOpen ? "Close" : "Reopen";
         btn.disabled = !canEdit;
 
+        // Button click handler
         btn.addEventListener("click", async () => {
-            // Re-check permissions on click
-            let allowed = false;
-            if (isOpen) {
-                allowed = isSuperAdmin || isSignatory || isAuthor;
-            } else {
-                allowed = isSuperAdmin || isAuthor;
-            }
+            // Re-check permissions on click (safety)
+            const allowed = isOpen
+                ? (isSuperAdmin || isSignatory || isAuthor)
+                : (isSuperAdmin || isAuthor);
+
             if (!allowed) return;
 
             btn.disabled = true;
             btn.textContent = isOpen ? "Closing..." : "Reopening...";
 
             try {
-                const res = await fetch(`${API_URL}/api/documents/${doc.data[0].trackingNumber}`, {
+                const res = await fetch(`${API_URL}/api/documents/${doc.trackingNumber}`, {
                     method: "PATCH",
                     credentials: "include",
                     headers: {
@@ -188,7 +247,9 @@ const loadPageData = async () => {
                         status: isOpen ? "closed" : "open"
                     })
                 });
+
                 if (statusRedirect(res, "href")) return;
+
                 if (res.ok) {
                     window.location.reload();
                 } else {
@@ -196,281 +257,338 @@ const loadPageData = async () => {
                     btn.textContent = isOpen ? "Close" : "Reopen";
                     showActionAlert("Failed to update document status.");
                 }
-            } catch (e) {
+            } catch (error) {
+                console.error("Error updating document status:", error);
                 btn.disabled = false;
                 btn.textContent = isOpen ? "Close" : "Reopen";
                 showActionAlert("Error updating document status.");
             }
         });
 
-        buttonRows.innerHTML = ""; // Clear existing
         buttonRows.appendChild(btn);
+
+    } catch (error) {
+        console.error("Error rendering action buttons:", error);
+        showActionAlert("Error displaying document actions");
     }
-    // ...existing code...
-    //#endregion
+}
 
-    //#region doc action form conditional rendering
+/**
+ * Creates a select element for recipient selection
+ * @param {"department"|"user"} type - The type of recipients to display
+ * @param {User} currentUser - The current user for filtering options
+ * @returns {Promise<HTMLDivElement|null>} The wrapper containing the select element or null on error
+ */
+async function createRecipientSelect(type, currentUser) {
+    try {
+        // Create elements
+        const select = document.createElement("select");
+        select.className = "form-select";
+        select.name = "recipient";
+        select.id = "recipient";
+        select.required = true;
 
-    const actionForm = document.getElementById("action-form");
-    if (actionForm) {
-        // Permission logic: must be signatory, superadmin, doc author, assigned user, or user in assigned department, and doc must be open
-        const isSuperAdmin = me.role === "superadmin";
-        const isSignatory = me.id === doc.data[0].signatory;
-        const isAuthor = me.id === doc.data[0].author;
-        const isAssignedUser = doc.data[0].assignedUser && me.id === doc.data[0].assignedUser;
-        const isInAssignedDept = doc.data[0].assignedDepartment && me.department?.id === doc.data[0].assignedDepartment;
-        const isOpen = doc.data[0].status === "open";
+        const label = document.createElement("label");
+        label.className = "form-label required";
+        label.htmlFor = "recipient";
 
-        if (
-            !isOpen ||
-            (!isSuperAdmin && !isSignatory && !isAuthor && !isAssignedUser && !isInAssignedDept)
-        ) {
-            actionForm.remove();
-        } else {
-            // Setup dynamic fields
-            const actionTypeSelect = actionForm.querySelector("#actionType");
-            const detailsField = actionForm.querySelector("#details")?.closest("div");
+        const wrapper = document.createElement("div");
 
-            // Helper to create recipient select
-            const createRecipientSelect = async (type) => {
-                let select = document.createElement("select");
-                select.className = "form-select";
-                select.name = "recipient";
-                select.id = "recipient";
-                select.required = true;
+        if (type === "department") {
+            label.textContent = "Department to transfer";
 
-                let label = document.createElement("label");
-                label.className = "form-label required";
-                label.htmlFor = "recipient";
-                if (type === "department") {
-                    label.textContent = "Department to transfer";
-                    // Fetch departments
-                    const res = await fetch(`${API_URL}/api/departments`, { credentials: "include" });
-                    if (!res.ok) {
-                        showActionAlert("Failed to load departments.");
-                        return null;
-                    }
-
-                    /**
-                    * @type {{
-                    * message: string,
-                    * data: {
-                    * id: number;
-                    * name: string;
-                    * }[]}
-                    * }
-                    */
-                    const data = await res.json();
-                    select.innerHTML = `<option value="">Select Department</option>`;
-                    data.data.forEach(dept => {
-                        select.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
-                    });
-                } else if (type === "user") {
-                    label.textContent = "User to assign";
-                    // Fetch users
-                    const res = await fetch(`${API_URL}/api/users`, { credentials: "include" });
-                    if (!res.ok) {
-                        showActionAlert("Failed to load users.");
-                        return null;
-                    }
-
-                    /**
-                    * @type {{message: string, count: number,data: {
-                    * department: { id: number; name: string } | null;
-                    * id: number;
-                    * role: "superadmin" | "admin" | "clerk" | "officer";
-                    * name: string;
-                    * username: string;
-                    * createdAt: string | null;
-                    * }[]}}
-                    */
-                    const data = await res.json();
-                    select.innerHTML = `<option value="">Select User</option>`;
-                    // Only users in the same department as the author
-                    data.data
-                        .filter(user => user.department && user.department.id === me.department?.id)
-                        .forEach(user => {
-                            select.innerHTML += `<option value="${user.id}">${user.name} (${user.department?.name})</option>`;
-                        });
-                }
-                const wrapper = document.createElement("div");
-                wrapper.appendChild(label);
-                wrapper.appendChild(select);
-                return wrapper;
-            };
-
-            // Dynamic field logic
-            let recipientField = null;
-
-            async function updateRecipientField() {
-                // Remove old recipient field if exists
-                if (recipientField && recipientField.parentNode) {
-                    recipientField.parentNode.removeChild(recipientField);
-                    recipientField = null;
-                }
-                const actionType = actionTypeSelect.value;
-                if (actionType === "transfer") {
-                    recipientField = await createRecipientSelect("department");
-                    if (recipientField && detailsField) {
-                        actionForm.insertBefore(recipientField, detailsField);
-                    }
-                } else if (actionType === "assign") {
-                    recipientField = await createRecipientSelect("user");
-                    if (recipientField && detailsField) {
-                        actionForm.insertBefore(recipientField, detailsField);
-                    }
-                }
+            // Fetch departments
+            const res = await fetch(`${API_URL}/api/departments`, { credentials: "include" });
+            if (!res.ok) {
+                showActionAlert("Failed to load departments.");
+                return null;
             }
 
-            actionTypeSelect.addEventListener("change", updateRecipientField);
-            // Initial call
-            updateRecipientField();
+            /** @type {DepartmentsResponse} */
+            const data = await res.json();
 
-            // Form submission
-            actionForm.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                showActionAlert(""); // Clear previous
+            select.innerHTML = `<option value="">Select Department</option>`;
+            if (data?.data) {
+                data.data.forEach(dept => {
+                    select.innerHTML += `<option value="${dept.id}">${dept.name || "Unknown"}</option>`;
+                });
+            }
+        } else if (type === "user") {
+            label.textContent = "User to assign";
 
-                const actionType = actionTypeSelect.value;
-                const details = actionForm.querySelector("#details").value;
-                let recipient = null;
-                let recipientType = null;
+            // Fetch users
+            const res = await fetch(`${API_URL}/api/users`, { credentials: "include" });
+            if (!res.ok) {
+                showActionAlert("Failed to load users.");
+                return null;
+            }
 
-                if (actionType === "transfer" || actionType === "assign") {
-                    const recipientInput = actionForm.querySelector("#recipient");
-                    if (!recipientInput || !recipientInput.value) {
-                        showActionAlert("Please select a recipient.");
-                        return;
-                    }
-                    recipient = recipientInput.value;
-                    recipientType = actionType === "transfer" ? "dept" : "user";
-                }
+            /** @type {UsersResponse} */
+            const data = await res.json();
 
-                // Build body
-                const body = new URLSearchParams();
-                body.append("action", actionType);
-                if (recipient) body.append("recipient", recipient);
-                if (recipientType) body.append("recipientType", recipientType);
-                if (details) body.append("additionalDetails", details);
+            select.innerHTML = `<option value="">Select User</option>`;                // Only users in the same department as the current user
+            if (data?.data && currentUser?.department?.id) {
+                const filteredUsers = data.data.filter(user =>
+                    user.department && user.department.id === currentUser.department?.id
+                );
 
-                try {
-                    const res = await fetch(`${API_URL}/api/documents/${doc.data[0].trackingNumber}/action`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded"
-                        },
-                        body
-                    });
-                    // if (statusRedirect(res, "href")) return;
-                    if (res.ok) {
-                        actionForm.reset();
-                        showActionAlert("Action posted successfully", "success");
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 500)
-                    } else {
-                        const data = await res.json();
-                        showActionAlert(data?.message || "Failed to perform action.");
-                    }
-                } catch (err) {
-                    showActionAlert("Network error. Please try again.");
-                }
-            });
+                filteredUsers.forEach(user => {
+                    const deptName = user.department?.name || "No Department";
+                    select.innerHTML += `<option value="${user.id}">${user.name || "Unknown"} (${deptName})</option>`;
+                });
+            }
         }
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(select);
+        return wrapper;
+
+    } catch (error) {
+        console.error(`Error creating ${type} select:`, error);
+        return null;
     }
-    //#endregion
+}
 
-    //#region doc thread
-    /**
- * @typedef {object} DocumentLog
- * @property {number} id
- * @property {number} document
- * @property {number} location
- * @property {number} author
- * @property {number|null} recipient
- * @property {"user"|"dept"|null} recipientType
- * @property {"created"|"closed"|"reopen"|"note"|"transfer"|"receive"|"assign"|"approve"|"deny"} action
- * @property {string} logMessage
- * @property {string|null} additionalDetails
- * @property {string} timestamp
+/**
+ * Sets up the document action form functionality
+ * @param {Document} doc - The document object
+ * @param {User} currentUser - The current user
  */
+async function setupDocumentActionForm(doc, currentUser) {
+    const actionForm = window.document.getElementById("action-form");
+    if (!actionForm) return;
 
-    /**
-     * @typedef {object} DocumentLogsResponse
-     * @property {string} message
-     * @property {DocumentLog[]} data
-     */
+    try {
+        // Permission checks
+        const isSuperAdmin = currentUser.role === "superadmin";
+        const isSignatory = currentUser.id === doc.signatory;
+        const isAuthor = currentUser.id === doc.author;
+        const isAssignedUser = doc.assignedUser && currentUser.id === doc.assignedUser;
+        const isInAssignedDept = doc.assignedDepartment &&
+            currentUser.department?.id === doc.assignedDepartment;
+        const isOpen = doc.status === "open";
 
-    const docThread = document.getElementById("docThread");
-    if (docThread) {
-        // Remove all existing .thread-item (if any)
+        // Remove form if no permission
+        if (!isOpen || (!isSuperAdmin && !isSignatory && !isAuthor && !isAssignedUser && !isInAssignedDept)) {
+            actionForm.remove();
+            return;
+        }
+
+        // Get form fields
+        const actionTypeSelect = actionForm.querySelector("#actionType");
+        const detailsField = actionForm.querySelector("#details")?.closest("div");
+
+        if (!actionTypeSelect || !detailsField) {
+            console.error("Required form fields not found");
+            return;
+        }
+
+        // Safely cast elements to their appropriate types
+        const actionTypeSelectElement = /** @type {HTMLSelectElement} */ (actionTypeSelect);
+
+        // Dynamic field management
+        let recipientField = null;
+
+        async function updateRecipientField() {
+            // Remove old recipient field if it exists
+            if (recipientField && recipientField.parentNode) {
+                recipientField.parentNode.removeChild(recipientField);
+                recipientField = null;
+            }
+
+            const actionType = actionTypeSelectElement.value;
+
+            if (actionType === "transfer") {
+                recipientField = await createRecipientSelect("department", currentUser);
+                if (recipientField && actionForm && detailsField) {
+                    actionForm.insertBefore(recipientField, detailsField);
+                }
+            } else if (actionType === "assign") {
+                recipientField = await createRecipientSelect("user", currentUser);
+                if (recipientField && actionForm && detailsField) {
+                    actionForm.insertBefore(recipientField, detailsField);
+                }
+            }
+        }
+
+        // Set up action type change listener
+        actionTypeSelectElement.addEventListener("change", updateRecipientField);
+
+        // Initial setup
+        await updateRecipientField();
+
+        // Form submission handler
+        actionForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            showActionAlert(""); // Clear previous alerts
+
+            const actionType = actionTypeSelectElement.value;
+            const detailsInput = /** @type {HTMLTextAreaElement} */ (actionForm.querySelector("#details"));
+            const details = detailsInput ? detailsInput.value : "";
+            let recipient = null;
+            let recipientType = null;
+
+            // Get recipient info if needed
+            if (actionType === "transfer" || actionType === "assign") {
+                const recipientInput = /** @type {HTMLSelectElement} */ (actionForm.querySelector("#recipient"));
+                if (!recipientInput || !recipientInput.value) {
+                    showActionAlert("Please select a recipient.");
+                    return;
+                }
+                recipient = recipientInput.value;
+                recipientType = actionType === "transfer" ? "dept" : "user";
+            }
+
+            // Build request body
+            const body = new URLSearchParams();
+            body.append("action", actionType);
+            if (recipient) body.append("recipient", recipient);
+            if (recipientType) body.append("recipientType", recipientType);
+            if (details) body.append("additionalDetails", details);
+
+            try {
+                const formSubmitButton = /** @type {HTMLButtonElement} */ (actionForm.querySelector("#form-submit"));
+                if (formSubmitButton) {
+                    formSubmitButton.disabled = true;
+                }
+
+                const res = await fetch(`${API_URL}/api/documents/${doc.trackingNumber}/action`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body
+                });
+
+                // Optional status redirect
+                // if (statusRedirect(res, "href")) return;
+
+                if (formSubmitButton) {
+                    formSubmitButton.disabled = false;
+                }
+
+                if (res.ok) {
+                    /** @type {HTMLFormElement} */ (actionForm).reset();
+                    showActionAlert("Action posted successfully", "success");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    const errorData = await res.json().catch(() => ({ message: "Error processing response" }));
+                    showActionAlert(errorData?.message || "Failed to perform action.");
+                }
+            } catch (error) {
+                console.error("Error submitting action:", error);
+                showActionAlert("Network error. Please try again.");
+
+                const formSubmitButton = /** @type {HTMLButtonElement} */ (actionForm.querySelector("#form-submit"));
+                if (formSubmitButton) {
+                    formSubmitButton.disabled = false;
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error("Error setting up document action form:", error);
+        showActionAlert("Error setting up document actions");
+    }
+}
+
+/**
+ * Renders the document history thread
+ * @param {Document} doc - The document object
+ */
+async function renderDocumentThread(doc) {
+    const docThread = window.document.getElementById("docThread");
+    if (!docThread) return;
+
+    try {
+        // Clear existing thread items
         docThread.querySelectorAll(".thread-item").forEach(el => el.remove());
 
-        /**
-         * Fetch and render document logs
-         */
-        async function renderDocumentLogs() {
-            // Get tracking number from URL
-            const urlParts = window.location.pathname.split('/');
-            const tn = urlParts[urlParts.length - 1];
+        // Fetch document logs using the doc parameter
+        const logsRes = await fetch(`${API_URL}/api/documents/${doc.trackingNumber}/logs`, {
+            credentials: "include"
+        });
 
-            // Fetch logs
-            /** @type {DocumentLogsResponse} */
-            const logsRes = await fetch(`${API_URL}/api/documents/${tn}/logs`, {
-                credentials: "include"
-            }).then(res => res.json());
+        if (!logsRes.ok) {
+            showActionAlert("Failed to load document history", "warning");
+            return;
+        }
 
-            for (let i = 0; i < logsRes.data.length; ++i) {
-                const log = logsRes.data[i];
+        /** @type {DocumentLogsResponse} */
+        const logsData = await logsRes.json();
 
-                // Get location name
+        if (!logsData?.data?.length) {
+            // No logs found, add message
+            const emptyMessage = window.document.createElement("p");
+            emptyMessage.className = "text-muted fst-italic";
+            emptyMessage.textContent = "No activity has been recorded for this document.";
+            docThread.appendChild(emptyMessage);
+            return;
+        }
+
+        // Process and render each log entry
+        for (let i = 0; i < logsData.data.length; ++i) {
+            const log = logsData.data[i];
+
+            try {
+                // Get location info
                 let locationName = "";
                 try {
                     const dept = await getDepartmentData(log.location);
-                    locationName = dept?.name ?? "";
-                } catch { locationName = ""; }
+                    locationName = dept?.name || "";
+                } catch (error) {
+                    console.warn("Could not fetch location:", error);
+                }
 
                 // Get author info
                 let authorName = "";
                 let authorDept = "";
                 try {
                     const author = await getUserData(log.author);
-                    authorName = author?.name ?? "";
-                    authorDept = author?.department?.name ?? "";
-                } catch { authorName = ""; authorDept = ""; }
+                    authorName = author?.name || "";
+                    authorDept = author?.department?.name || "";
+                } catch (error) {
+                    console.warn("Could not fetch author:", error);
+                }
 
                 // Get recipient info
                 let recipientStr = "";
                 if (log.recipient && log.recipientType === "user") {
                     try {
                         const user = await getUserData(log.recipient);
-                        recipientStr = `${user.name}${user.department ? " (" + user.department.name + ")" : ""}`;
-                    } catch { recipientStr = ""; }
+                        recipientStr = `${user?.name || ""}${user?.department ? " (" + user.department.name + ")" : ""}`;
+                    } catch (error) {
+                        console.warn("Could not fetch user recipient:", error);
+                    }
                 } else if (log.recipient && log.recipientType === "dept") {
                     try {
                         const dept = await getDepartmentData(log.recipient);
-                        recipientStr = dept.name;
-                    } catch { recipientStr = ""; }
+                        recipientStr = dept?.name || "";
+                    } catch (error) {
+                        console.warn("Could not fetch department recipient:", error);
+                    }
                 }
 
-                // Badge color
+                // Badge styling
                 const badgeClass = badgeColorProvider(log.action);
 
-                // Thread item HTML
+                // Create thread item
                 const threadId = `thread-collapse-${i + 1}`;
-                const threadItem = document.createElement("div");
+                const threadItem = window.document.createElement("div");
                 threadItem.className = "thread-item";
                 threadItem.innerHTML = `
                 <div class="thread-visible">
                     <div>
                         <div class="thread-top">
-                            <h4 class="thread-top__text">${log.timestamp} — ${locationName}
-                                <span class="badge ${badgeClass} rounded-pill fs-6">${log.action.charAt(0).toUpperCase() + log.action.slice(1)}</span>
+                            <h4 class="thread-top__text">${log.timestamp || "Unknown"} — ${locationName}
+                                <span class="badge ${badgeClass} rounded-pill fs-6">${capitalizeFirst(log.action)}</span>
                             </h4>
                         </div>
                         <span>
-                            ${log.logMessage}
+                            ${log.logMessage || ""}
                         </span>
                     </div>
                     <div class="profile__dropdown">
@@ -482,20 +600,50 @@ const loadPageData = async () => {
                 <div class="thread-collapse collapse" id="${threadId}">
                     <hr>
                     <h5><b>Additional Details</b></h5>
-                    <p>${log.additionalDetails ? log.additionalDetails : "<i>No additional details</i>"}</p>
+                    <p>${log.additionalDetails || "<i>No additional details</i>"}</p>
                     <hr>
                     <div><b>Current Location</b> <span>${locationName}</span></div>
                     <div><b>Action Author</b> <span>${authorName}${authorDept ? " (" + authorDept + ")" : ""}</span></div>
                     ${recipientStr ? `<div><b>Recipient</b> <span>${recipientStr}</span></div>` : ""}
                 </div>
-            `;
+                `;
+
                 docThread.appendChild(threadItem);
+
+            } catch (error) {
+                console.error("Error rendering log entry:", error);
             }
         }
 
-        renderDocumentLogs();
+    } catch (error) {
+        console.error("Error rendering document thread:", error);
+        showActionAlert("Error loading document history");
     }
-    //#endregion
 }
 
+/**
+ * Main function to load and render page data
+ */
+async function loadPageData() {
+    try {
+        // Fetch document and user data
+        const data = await fetchDocumentData();
+
+        if (!data) return;
+
+        const { document: doc, currentUser } = data;
+
+        // Render different page sections
+        await renderDocumentDetails(doc, currentUser);
+        renderDocumentActionButtons(doc, currentUser);
+        await setupDocumentActionForm(doc, currentUser);
+        await renderDocumentThread(doc);
+
+    } catch (error) {
+        console.error("Error loading page data:", error);
+        showActionAlert("An unexpected error occurred while loading the page");
+    }
+}
+
+// Initialize when the DOM is ready
 document.addEventListener("DOMContentLoaded", loadPageData);
