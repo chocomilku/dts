@@ -10,8 +10,9 @@ import { redirect } from "./statusRedirect.js";
  * @param {HTMLInputElement[]} fields - Input fields to validate
  * @param {boolean} resetMessages - Whether to reset error messages to their original state
  * @param {string|null} errorMessage - Custom error message to display for invalid fields
+ * @param {boolean} forceInvalidate - force invalidate form fields to show errors such as auth or network error
  */
-function validateFields(fields, resetMessages = true, errorMessage = null) {
+function validateFields(fields, resetMessages = true, errorMessage = null, forceInvalidate = false) {
     fields.forEach(field => {
         // Get feedback element
         const feedbackEl = field.nextElementSibling;
@@ -25,10 +26,15 @@ function validateFields(fields, resetMessages = true, errorMessage = null) {
             }
         }
 
-        // Update field classes based on validity
-        if (field.checkValidity()) {
-            field.classList.remove("is-invalid");
-            field.classList.add("is-valid");
+        if (!forceInvalidate) {
+            // Update field classes based on validity
+            if (field.checkValidity()) {
+                field.classList.remove("is-invalid");
+                field.classList.add("is-valid");
+            } else {
+                field.classList.remove("is-valid");
+                field.classList.add("is-invalid");
+            }
         } else {
             field.classList.remove("is-valid");
             field.classList.add("is-invalid");
@@ -117,7 +123,7 @@ async function handleLoginSubmit(event) {
         // Handle response based on success/failure
         if (!response.ok) {
             updateSubmitButton(submitButton, false);
-            validateFields(formFields, false, data.message);
+            validateFields(formFields, false, data.message, true);
         } else {
             updateSubmitButton(submitButton, false, data.message);
             redirect("/dashboard", "replace");
@@ -125,7 +131,7 @@ async function handleLoginSubmit(event) {
     } catch (error) {
         console.error("Login failed:", error);
         updateSubmitButton(submitButton, false);
-        validateFields(formFields, false, "Network error. Please try again.");
+        validateFields(formFields, false, "Network error. Please try again.", true);
     }
 }
 

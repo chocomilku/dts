@@ -12,15 +12,17 @@ const app = new Hono();
 app.use(poweredBy());
 app.use(secureHeaders());
 app.use(logger());
-// change for prod / docker setup
-app.use(
-	"*",
-	cors({
-		origin: "http://localhost:5500",
-		credentials: true,
-		allowHeaders: ["http://localhost:5500"],
-	})
-);
+
+if (process.env.NODE_ENV == "development") {
+	app.use(
+		"*",
+		cors({
+			origin: "http://localhost:5500",
+			credentials: true,
+			allowHeaders: ["http://localhost:5500"],
+		})
+	);
+}
 
 // routes
 app.route("/api", routes);

@@ -25,6 +25,7 @@ services:
       - "54321:54321"
     environment:
       - NODE_ENV=development
+      - REDIS_CONN=redis://redis:6379
     depends_on:
       - redis
     networks:
@@ -42,7 +43,8 @@ services:
     ports:
       - "54321:54321"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
+      - REDIS_CONN=redis://redis:6379
     depends_on:
       - redis
     networks:
