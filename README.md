@@ -60,3 +60,49 @@ docker compose --profile dev down
 ## License
 
 This project is licensed under MIT License.
+
+## Todo
+
+- **collapisble users** \
+  show id role username (visible to admins only [intercept API level]) \
+
+- **department pages** \
+  add description (hmmm) \
+  list members
+
+- **document aging (default to 2 weeks from creation)** \
+  `dueAt: timestamp`
+
+- **overdue filter** \
+  overdue if `dueAt > createdAt`
+
+- **overdue badge**
+
+- **feedback form**
+
+```
+author: authorId
+timestamp: timestamp
+feedback: string
+```
+
+- **feedback list (superadmin)**
+
+- **multiple signatories** \
+  breaking change: remove signatory from document \
+  new signatories table
+
+```
+document: documentId
+signatory: userId
+lastUpdatedAt: timestamp
+status: null | "approved" | "denied" | "amend"
+```
+
+- **forgot password** \
+  nodemailer \
+  forgot password -> put email -> link to reset password (TTL 10min, redis)
+
+- **notif system** \
+  websocket \
+  email notifs
