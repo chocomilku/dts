@@ -6,10 +6,7 @@ import { SQLiteError } from "bun:sqlite";
 import { usernameProvider } from "@utils/usernameProvider";
 import { z } from "zod";
 import { eq, getTableColumns } from "drizzle-orm";
-import {
-	Department,
-	departments as departmentsModel,
-} from "@db/models/departments";
+import { departments as departmentsModel } from "@db/models/departments";
 import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
 
 type Variables = {} & SessionAuthVariables;
@@ -87,7 +84,7 @@ userRouter.get("/@me", sessionAuth("any"), async (c) => {
 		const data = { ...userRest, department };
 
 		c.status(200);
-		return c.json({ message: "OK", data });
+		return c.json({ message: "OK", data: [data] });
 	} catch (e) {
 		console.error(e);
 		c.status(500);

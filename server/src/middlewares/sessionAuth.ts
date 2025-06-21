@@ -41,7 +41,7 @@ export const sessionAuth = (role: "any" | Roles[]) => {
 		}
 
 		if (role == "any") {
-			c.set("user", user);
+			c.set("user", user[0]);
 			await next();
 		} else {
 			if (!role.includes(user[0].role as Roles)) {
@@ -49,7 +49,7 @@ export const sessionAuth = (role: "any" | Roles[]) => {
 				return c.json({ message: "Forbidden" });
 			}
 
-			c.set("user", user);
+			c.set("user", user[0]);
 			await next();
 		}
 	});
