@@ -65,7 +65,7 @@ This project is licensed under MIT License.
 
 - **responsive login page**
 
-- ~~**collapisble users**~~ \
+- ~~**collapsible users**~~ \
   ~~show id role username (visible to admins only [intercept API level])~~ \
 
 - ~~**department pages**~~ \
