@@ -10,7 +10,7 @@ export const API_URL = "";
  * @property {number} id
  * @property {UserRoles} role
  * @property {string} name
- * @property {string} username
+ * @property {string | undefined} username
  * @property {string | null} createdAt
  */
 

@@ -1,5 +1,6 @@
 {
     "js/ts.implicitProjectConfig.checkJs": true,
     "liveServer.settings.root": "/client",
-    "discord.enabled": true
+    "discord.enabled": true,
+    "liveServer.settings.port": 5501
 }

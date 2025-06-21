@@ -3,7 +3,7 @@ services:
   redis:
     container_name: dts-redis
     image: redis:8.0.1
-    restart: unless-stopped
+    restart: on-failure:5
     ports:
       - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
@@ -15,6 +15,7 @@ services:
   server-dev:
     profiles: [dev]
     container_name: dts-server
+    restart: on-failure:5
     build:
       context: ./server
       dockerfile: Dockerfile.dev
@@ -34,11 +35,11 @@ services:
   server-prod:
     profiles: [prod]
     container_name: dts-server
+    restart: on-failure:5
     build:
       context: ./server
       dockerfile: Dockerfile.prod
     volumes:
-      # - ./server:/app
       - ./database:/database
     ports:
       - "54321:54321"
@@ -54,7 +55,7 @@ services:
     container_name: dts-client
     profiles: [dev]
     image: caddy:2.10.0
-    restart: unless-stopped
+    restart: on-failure:5
     volumes:
       - ./config/caddy:/etc/caddy
       - ./client:/srv
@@ -73,7 +74,7 @@ services:
     container_name: dts-client
     profiles: [prod]
     image: caddy:2.10.0
-    restart: unless-stopped
+    restart: on-failure:5
     volumes:
       - ./config/caddy:/etc/caddy
       - ./client:/srv
