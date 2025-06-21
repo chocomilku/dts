@@ -5,7 +5,7 @@ import { db } from "@db/conn";
 import { SQLiteError } from "bun:sqlite";
 import { usernameProvider } from "@utils/usernameProvider";
 import { z } from "zod";
-import { eq, getTableColumns } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
 import { departments as departmentsModel } from "@db/models/departments";
 import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
 
@@ -17,6 +17,8 @@ const userRouter = new Hono<{ Variables: Variables }>();
 userRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
 		const { limit, offset, department } = c.req.query();
+		const user = c.get("user");
+
 		const querySchema = z.object({
 			limit: z.coerce.number().int().positive().max(50).default(10).catch(10),
 			offset: z.coerce.number().int().nonnegative().default(0).catch(0),
@@ -34,12 +36,21 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 			return c.json(parsedData.error);
 		}
 
+		const isAllowedToSeeUsername =
+			user.role == "superadmin" ||
+			(user.role == "admin" &&
+				user.departmentId == parsedData.data.departmentId);
+
 		const { password, username, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
 		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
 
+		const selectFields = isAllowedToSeeUsername
+			? { ...usersRest, username, department: deptRest }
+			: { ...usersRest, department: deptRest };
+
 		const data = await db
-			.select({ ...usersRest, department: deptRest })
+			.select(selectFields)
 			.from(usersModel)
 			.leftJoin(
 				departmentsModel,
@@ -51,7 +62,8 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 				parsedData.data.departmentId
 					? eq(usersModel.departmentId, parsedData.data.departmentId)
 					: undefined
-			);
+			)
+			.orderBy(desc(usersModel.createdAt));
 
 		const count = await db.$count(usersModel);
 

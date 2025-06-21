@@ -8,6 +8,7 @@ import { getUserData } from "./fetchHelpers.js";
  * @type {User|null}
  */
 let currentUser = null;
+let collapseIdCount = 1;
 
 /**
  * Gets an element by ID with type checking
@@ -48,6 +49,7 @@ function showError(message) {
  */
 function createStaffThreadItem(user) {
     if (!user || !user.id) return null;
+    const collapseId = `staff-collapse-${collapseIdCount++}`
 
     const threadItem = document.createElement("div");
     threadItem.className = "thread-item";
@@ -60,9 +62,20 @@ function createStaffThreadItem(user) {
                     </h3>
                 </div>
                 <span>
-                    ID: ${user.id} | Role: ${user.role || "Unknown"}
+                    <b>Role</b>: ${user.role ?? "Unknown"}
                 </span>
             </div>
+            <div class="profile__dropdown">
+                  <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#${collapseId}" aria-expanded="false"
+                    aria-controls="${collapseId}">▼</button>
+            </div>
+        </div>
+        <div class="thread-collapse collapse" id="${collapseId}">
+                <hr>
+                <div><b>Role</b> <span>${user.role ?? "Unknown"}</span></div>
+                <div><b>Created At</b> <span>${user.createdAt ?? "Unknown"}</span></div>
+                ${user.username ? `<div><b>Username</b> <span>${user.username}</span></div>` : ""}
         </div>
     `;
     return threadItem;
