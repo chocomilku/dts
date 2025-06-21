@@ -228,7 +228,7 @@ label.required::after {
     display: block;
 }
 
-.thread-top__text::after {
+a.thread-top__text::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -241,8 +241,8 @@ label.required::after {
     transform: translate3d(-100%, 0, 0);
 }
 
-.thread-top__text:hover::after,
-.thread-top__text:focus::after {
+a.thread-top__text:hover::after,
+a.thread-top__text:focus::after {
     opacity: 1;
     transform: translate3d(0, 0, 0);
 }
