@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department | Document Tracking System</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script defer src="/js/bootstrap.bundle.min.js"></script>
+    <script defer src="/js/sidenavbar.js"></script>
+    <script defer type="module" src="/js/navbarData.js"></script>
+    <script defer type="module" src="/js/department.page.js"></script>
+</head>
+
+<body>
+    <div class="page">
+        <div class="sidebar__wrapper sidebar-no-transition">
+            <nav class="sidebar">
+                <div class="sidebar__top">
+                    <img src="/static/Logo Banner.png" alt="banner" class="sidebar__banner">
+                    <div class="hamburger-mobile">
+                        <button type="button" onclick="toggleSidebar()"
+                            class="btn btn-outline-warning material-symbols-outlined">&#xe5d2</button>
+                    </div>
+                </div>
+                <hr>
+                <div class="profile">
+                    <img src="/static/Avatar.png" alt="avatar" class="profile__avatar">
+                    <div class="profile__info">
+                        <h4 class="fw-bold profile__name">&nbsp;</h4>
+                        <p class="fw-light profile__dept">&nbsp;</p>
+                    </div>
+                    <div class="dropdown">
+                        <button class="profile__dropdown btn text-white" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">▼</button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" id="logout">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="navigation">
+                    <hr>
+                    <a href="/dashboard" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">grid_view</span>
+                        <span class="fw-semibold">Dashboard</span>
+                    </a>
+                    <a href="/profile" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">group</span>
+                        <span class="fw-semibold">Profile</span>
+                    </a>
+                    <hr>
+                    <a href="/new" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">docs_add_on</span>
+                        <span class="fw-semibold">New Document</span>
+                    </a>
+                    <a href="/documents" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">article</span>
+                        <span class="fw-semibold">Documents</span>
+                    </a>
+                    <hr>
+                    <a href="/departments" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">supervisor_account</span>
+                        <span class="fw-semibold">Departments</span>
+                    </a>
+                    <a href="/staff" class="navigation__item" onclick="closeSidebarIfMobile()">
+                        <span class="material-symbols-outlined">groups</span>
+                        <span class="fw-semibold">Staff Members</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="content">
+            <nav class="topbar">
+                <span class="material-symbols-outlined"><button type="button" onclick="toggleSidebar()"
+                        class="btn btn-outline-warning">&#xe5d2</button></span>
+                <h5>Quezon City Document Tracking System</h5>
+                <span class="material-symbols-outlined"><button type="button"
+                        class="btn btn-outline-warning">&#xe51c</button></span>
+            </nav>
+            <main class="container-lg d-flex flex-column" id="departmentPage">
+                <h1 class="text-center mb-4"><b>Department Page</b></h1>
+
+                <div class="main-content">
+                    <h2><b id="deptTitle">&nbsp;</b></h2>
+                    <hr>
+                    <p id="deptDesc">&nbsp;</p>
+                </div>
+
+                <div class="main-content">
+                    <h2><b>Staff Members</b></h2>
+                    <div class="accordion" id="staffRoles">
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

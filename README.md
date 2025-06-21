@@ -65,11 +65,11 @@ This project is licensed under MIT License.
 
 - **responsive login page**
 
-- **collapisble users** \
-  show id role username (visible to admins only [intercept API level]) \
+- ~~**collapisble users**~~ \
+  ~~show id role username (visible to admins only [intercept API level])~~ \
 
 - **department pages** \
-  add description (hmmm) \
+  ~~add description (hmmm)~~ \
   list members
 
 - **document aging (default to 2 weeks from creation)** \

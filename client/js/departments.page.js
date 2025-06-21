@@ -28,8 +28,10 @@ const loadDepartments = async () => {
                 <div class="thread-visible">
                     <div>
                         <div class="thread-top">
-                            <h3 class="thread-top__text">
+                            <h3>
+                                <a href="/departments/${dept.id}"  class="thread-top__text">
                                 ${dept.name}
+                                </a>
                             </h3>
                         </div>
                         <span>

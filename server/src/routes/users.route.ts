@@ -22,13 +22,13 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 		const querySchema = z.object({
 			limit: z.coerce.number().int().positive().max(50).default(10).catch(10),
 			offset: z.coerce.number().int().nonnegative().default(0).catch(0),
-			departmentId: z.coerce.number().optional().catch(undefined),
+			department: z.coerce.number().optional().catch(undefined),
 		});
 
 		const parsedData = querySchema.safeParse({
 			limit,
 			offset,
-			departmentId: department,
+			department,
 		});
 
 		if (!parsedData.success) {
@@ -38,8 +38,7 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 
 		const isAllowedToSeeUsername =
 			user.role == "superadmin" ||
-			(user.role == "admin" &&
-				user.departmentId == parsedData.data.departmentId);
+			(user.role == "admin" && user.departmentId == parsedData.data.department);
 
 		const { password, username, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
@@ -59,8 +58,8 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 			.limit(parsedData.data.limit)
 			.offset(parsedData.data.offset)
 			.where(
-				parsedData.data.departmentId
-					? eq(usersModel.departmentId, parsedData.data.departmentId)
+				parsedData.data.department
+					? eq(usersModel.departmentId, parsedData.data.department)
 					: undefined
 			)
 			.orderBy(desc(usersModel.createdAt));

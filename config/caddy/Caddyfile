@@ -2,6 +2,7 @@
 	root * /srv/
 
 	rewrite /documents/* document.html
+	rewrite /departments/* department.html
 
 	@stripExtensions path_regexp strip (.*)\.(html)
 	redir @stripExtensions {re.strip.1} 301

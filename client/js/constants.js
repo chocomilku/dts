@@ -20,6 +20,7 @@ export const API_URL = "";
  * @property {string} name
  * @property {number | null} members
  * @property {number | null} createdAt
+ * @property {string | null} description
  */
 
 /**
