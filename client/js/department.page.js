@@ -35,7 +35,7 @@ async function fetchDepartmentData() {
         }
 
     } catch (error) {
-        console.error("Error fetching derpartment data: ", error)
+        console.error("Error fetching department data: ", error)
         return null;
     }
 }
