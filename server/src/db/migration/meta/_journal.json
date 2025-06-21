@@ -85,6 +85,13 @@
       "when": 1750476521886,
       "tag": "0011_not_null",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1750484739244,
+      "tag": "0012_add_dept_description",
+      "breakpoints": true
     }
   ]
 }

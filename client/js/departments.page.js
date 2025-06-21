@@ -73,6 +73,8 @@ const formHandling = async () => {
 
     const nameField = document.getElementById("name")
     if (!(nameField instanceof HTMLInputElement)) return;
+    const descField = document.getElementById("description");
+    if (!(descField instanceof HTMLTextAreaElement)) return;
 
     const feedback = document.getElementById("name-feedback");
 
@@ -95,7 +97,7 @@ const formHandling = async () => {
 
             const res = await fetch(`${API_URL}/api/departments`, {
                 method: "POST",
-                body: new URLSearchParams({ name: nameField.value }),
+                body: new URLSearchParams({ name: nameField.value, description: descField.value }),
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
@@ -128,6 +130,7 @@ const formHandling = async () => {
                 nameField.classList.add("is-valid");
                 setTimeout(() => {
                     nameField.value = "";
+                    descField.value = "";
                     window.location.reload();
                 }, 500)
             }

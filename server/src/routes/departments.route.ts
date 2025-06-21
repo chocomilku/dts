@@ -66,10 +66,10 @@ departmentRouter.get("/:id", sessionAuth("any"), async (c) => {
 //#region departments - GET ALL
 departmentRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
-		const { ...deptsRest } = getTableColumns(departmentsModel);
+		const { id, name, createdAt } = getTableColumns(departmentsModel);
 
 		const data = await db
-			.select({ ...deptsRest, members: count(usersModel.departmentId) })
+			.select({ id, name, createdAt, members: count(usersModel.departmentId) })
 			.from(departmentsModel)
 			.leftJoin(usersModel, eq(departmentsModel.id, usersModel.departmentId))
 			.groupBy(departmentsModel.id)
@@ -98,6 +98,7 @@ departmentRouter.post(
 				.insert(departmentsModel)
 				.values({
 					name: validated.name,
+					description: validated.description,
 				})
 				.returning({ id: departmentsModel.id });
 
