@@ -13,8 +13,12 @@ export const users = sqliteTable("users", {
 		.notNull(),
 	username: text().notNull().unique(),
 	password: text().notNull(),
-	createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
+	createdAt: text()
+		.default(sql`(CURRENT_TIMESTAMP)`)
+		.notNull(),
 });
+
+export type User = typeof users.$inferSelect;
 
 export const zUsers = z.object({
 	role: z.enum(["superadmin", "admin", "clerk", "officer"]),

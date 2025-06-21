@@ -1,6 +1,6 @@
 import { SQLiteError } from "bun:sqlite";
 import { Hono } from "hono";
-import { sessionAuth } from "@middlewares/sessionAuth";
+import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
 import { zValidator } from "@hono/zod-validator";
 import {
 	documents as documentsModel,
@@ -23,7 +23,7 @@ import {
 	count,
 	ne,
 } from "drizzle-orm";
-import { users as usersModel } from "@db/models/users";
+import { User, users as usersModel } from "@db/models/users";
 import {
 	documentLogs as documentLogsModel,
 	zDocumentLogs,
@@ -31,31 +31,19 @@ import {
 import { logMessageProvider } from "@utils/logMessageProvider";
 import { z } from "zod/v4";
 import { emptyString } from "@utils/emptyString";
-import { departments as departmentsModel } from "@db/models/departments";
+import {
+	Department,
+	departments as departmentsModel,
+} from "@db/models/departments";
 
-type Variables = {
-	userId: number; // from sessionAuth
-};
+type Variables = {} & SessionAuthVariables;
 
 const documentRouter = new Hono<{ Variables: Variables }>();
 
 //#region documents/count
 documentRouter.get("/count", sessionAuth("any"), async (c) => {
 	try {
-		const userId = c.get("userId");
-
-		const { departmentId } = getTableColumns(usersModel);
-
-		const user = await db
-			.select({ departmentId })
-			.from(usersModel)
-			.limit(1)
-			.where(eq(usersModel.id, userId));
-
-		if (user.length != 1) {
-			c.status(404);
-			return c.json({ message: "User not found." });
-		}
+		const user = c.get("user");
 
 		const openCount = await db.$count(
 			documentsModel,
@@ -67,7 +55,10 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 		);
 		const assignedCount = await db.$count(
 			documentsModel,
-			sql`${documentsModel.assignedUser} = ${userId} OR ${documentsModel.assignedDepartment} = ${user[0].departmentId}`
+			or(
+				eq(documentsModel.assignedUser, user.id),
+				eq(documentsModel.assignedDepartment, user.departmentId)
+			)
 		);
 
 		c.status(200);
@@ -107,27 +98,8 @@ documentRouter.get(
 	zValidator("query", getAllDocumentsQuerySchema),
 	async (c) => {
 		try {
-			type SortFilters =
-				| "created-asc"
-				| "created-desc"
-				| "updated-asc"
-				| "updated-desc";
-
-			const userId = c.get("userId");
+			const user = c.get("user");
 			const parsedQuery = c.req.valid("query");
-
-			const { departmentId } = getTableColumns(usersModel);
-
-			const user = await db
-				.select({ departmentId })
-				.from(usersModel)
-				.limit(1)
-				.where(eq(usersModel.id, userId));
-
-			if (user.length != 1) {
-				c.status(404);
-				return c.json({ message: "User not found." });
-			}
 
 			// documents query
 
@@ -147,13 +119,13 @@ documentRouter.get(
 
 				if (parsedQuery.assigned == true) {
 					assignedFilter = or(
-						eq(documentsModel.assignedUser, userId),
-						eq(documentsModel.assignedDepartment, user[0].departmentId)
+						eq(documentsModel.assignedUser, user.id),
+						eq(documentsModel.assignedDepartment, user.departmentId)
 					);
 				} else {
 					assignedFilter = or(
-						ne(documentsModel.assignedUser, userId),
-						ne(documentsModel.assignedDepartment, user[0].departmentId)
+						ne(documentsModel.assignedUser, user.id),
+						ne(documentsModel.assignedDepartment, user.departmentId)
 					);
 				}
 
@@ -350,7 +322,7 @@ documentRouter.post(
 	async (c) => {
 		try {
 			const form = c.req.valid("form");
-			const authorId = c.get("userId");
+			const author = c.get("user");
 			const { tn } = c.req.param();
 
 			const paramSchema = z.preprocess(emptyString, z.coerce.string());
@@ -364,30 +336,13 @@ documentRouter.post(
 
 			// author
 			const { id: userId, name, departmentId } = getTableColumns(usersModel);
-			const authorData = await db
-				.select({ name, departmentId })
-				.from(usersModel)
-				.where(eq(usersModel.id, authorId))
-				.limit(1);
 
-			if (authorData.length != 1) {
-				c.status(404);
-				return c.json({ message: "Author not found." });
-			}
+			type PartialUser = Pick<User, "id" | "name" | "departmentId">;
 
-			type partialUser = {
-				id: number;
-				name: string;
-				departmentId: number;
-			};
-
-			type partialDepartment = {
-				id: number;
-				name: string;
-			};
+			type PartialDepartment = Pick<Department, "id" | "name">;
 
 			// recipient
-			let recipient: null | partialUser | partialDepartment = null;
+			let recipient: null | PartialUser | PartialDepartment = null;
 
 			if (form.recipient && form.recipientType) {
 				if (form.recipientType === "user") {
@@ -446,7 +401,7 @@ documentRouter.post(
 
 			// permission checks
 			if (form.action == "approve" || form.action == "deny") {
-				if (!(doc[0].signatory == authorId)) {
+				if (!(doc[0].signatory == author.id)) {
 					c.status(403);
 					return c.json({
 						message: "You are not the signatory of this document.",
@@ -462,7 +417,7 @@ documentRouter.post(
 					});
 				}
 				if ("departmentId" in recipient && recipient.departmentId) {
-					if (recipient.departmentId != authorData[0].departmentId) {
+					if (recipient.departmentId != author.departmentId) {
 						c.status(400);
 						return c.json({
 							message: "User to assign must be in the same department.",
@@ -475,7 +430,7 @@ documentRouter.post(
 			}
 
 			if (doc[0].assignedDepartment != null) {
-				if (authorData[0].departmentId != doc[0].assignedDepartment) {
+				if (author.departmentId != doc[0].assignedDepartment) {
 					c.status(403);
 					return c.json({
 						message: "This document does not belong to this department.",
@@ -484,7 +439,7 @@ documentRouter.post(
 			}
 
 			if (doc[0].assignedUser != null) {
-				if (authorId != doc[0].assignedUser) {
+				if (author.id != doc[0].assignedUser) {
 					c.status(403);
 					return c.json({
 						message: "This document is not assigned to you.",
@@ -526,7 +481,7 @@ documentRouter.post(
 					assignDept = form.recipient;
 					break;
 				case "receive":
-					assignUser = authorId;
+					assignUser = author.id;
 					assignDept = null;
 					break;
 				case "assign":
@@ -544,15 +499,15 @@ documentRouter.post(
 
 			const logMessage = logMessageProvider(
 				form.action,
-				authorData[0].name,
+				author.name,
 				recipient ? recipient.name : undefined
 			);
 
 			// log action
 			await db.insert(documentLogsModel).values({
 				document: doc[0].id,
-				location: authorData[0].departmentId,
-				author: authorId,
+				location: author.departmentId,
+				author: author.id,
 				recipient: form.recipient,
 				recipientType: form.recipientType,
 				action: form.action,
@@ -627,7 +582,7 @@ documentRouter.patch(
 	async (c) => {
 		try {
 			const form = c.req.valid("form");
-			const authorId = c.get("userId");
+			const author = c.get("user");
 			const { tn } = c.req.param();
 
 			const paramSchema = z.preprocess(emptyString, z.coerce.string());
@@ -639,33 +594,15 @@ documentRouter.patch(
 
 			const trackingNumber = parseData.data;
 
-			// author
-			const {
-				id: userId,
-				name,
-				departmentId,
-				role,
-			} = getTableColumns(usersModel);
-			const authorData = await db
-				.select({ id: userId, name, departmentId, role })
-				.from(usersModel)
-				.where(eq(usersModel.id, authorId))
-				.limit(1);
-
-			if (authorData.length != 1) {
-				c.status(404);
-				return c.json({ message: "Author not found." });
-			}
-
 			// doc
 			const {
 				id: docId,
 				signatory,
 				status,
-				author,
+				author: docAuthor,
 			} = getTableColumns(documentsModel);
 			const doc = await db
-				.select({ id: docId, signatory, status, author })
+				.select({ id: docId, signatory, status, author: docAuthor })
 				.from(documentsModel)
 				.where(eq(documentsModel.trackingNumber, trackingNumber))
 				.limit(1);
@@ -686,9 +623,9 @@ documentRouter.patch(
 				return c.json({});
 			}
 
-			const isSignatory = authorId == doc[0].signatory;
-			const isDocAuthor = doc[0].author == authorId;
-			const isSuperAdmin = authorData[0].role == "superadmin";
+			const isSignatory = author.id == doc[0].signatory;
+			const isDocAuthor = doc[0].author == author.id;
+			const isSuperAdmin = author.role == "superadmin";
 
 			if (form.status == "closed") {
 				if (!isSignatory && !isDocAuthor && !isSuperAdmin) {
@@ -706,12 +643,12 @@ documentRouter.patch(
 
 			await db.insert(documentLogsModel).values({
 				document: doc[0].id,
-				location: authorData[0].departmentId,
-				author: authorId,
+				location: author.departmentId,
+				author: author.id,
 				action: form.status == "closed" ? "closed" : "reopen",
 				logMessage: logMessageProvider(
 					form.status == "closed" ? "closed" : "reopen",
-					authorData[0].name
+					author.name
 				),
 				additionalDetails: form.additionalDetails,
 			});
@@ -744,21 +681,8 @@ documentRouter.post(
 	zValidator("form", zDocuments),
 	async (c) => {
 		try {
-			const authorId = c.get("userId");
+			const author = c.get("user");
 			const form = c.req.valid("form");
-
-			const { name, departmentId } = getTableColumns(usersModel);
-
-			const userData = await db
-				.select({ name, departmentId })
-				.from(usersModel)
-				.where(eq(usersModel.id, authorId))
-				.limit(1);
-
-			if (userData.length != 1) {
-				c.status(404);
-				return c.json({ message: "Author not found." });
-			}
 
 			const insertedDoc = await db
 				.insert(documentsModel)
@@ -769,9 +693,9 @@ documentRouter.post(
 					type: form.type,
 					details: form.details,
 					signatory: form.signatory,
-					author: authorId,
-					originDepartment: userData[0].departmentId,
-					assignedUser: authorId,
+					author: author.id,
+					originDepartment: author.departmentId,
+					assignedUser: author.id,
 					assignedDepartment: null,
 				})
 				.returning({
@@ -781,10 +705,10 @@ documentRouter.post(
 
 			await db.insert(documentLogsModel).values({
 				document: insertedDoc[0].id,
-				location: userData[0].departmentId,
-				author: authorId,
+				location: author.departmentId,
+				author: author.id,
 				action: "created",
-				logMessage: logMessageProvider("created", userData[0].name),
+				logMessage: logMessageProvider("created", author.name),
 			});
 
 			c.status(201);

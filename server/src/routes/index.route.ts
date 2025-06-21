@@ -5,11 +5,9 @@ import { db } from "@db/conn";
 import { users as usersModel, zLogin } from "@db/models/users";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createSession, destroySession } from "@utils/sessionProvider";
-import { sessionAuth } from "@middlewares/sessionAuth";
+import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
 
-type Variables = {
-	userId: number; // from sessionAuth
-};
+type Variables = {} & SessionAuthVariables;
 
 const indexRouter = new Hono<{ Variables: Variables }>();
 
@@ -22,9 +20,9 @@ indexRouter.get("/", (c) => {
 
 //#region Check - [ANY] GET
 indexRouter.get("/check", sessionAuth("any"), async (c) => {
-	const id = c.get("userId");
+	const user = c.get("user");
 	c.status(200);
-	return c.json({ message: "Authenticated", userId: id });
+	return c.json({ message: "Authenticated", userId: user.id });
 });
 //#endregion
 
@@ -60,7 +58,7 @@ indexRouter.post("/login", zValidator("form", zLogin), async (c) => {
 
 	setCookie(c, "dts.sid", sessionId, {
 		path: "/",
-		secure: false, // set to true when on prod (https only)
+		secure: process.env.NODE_ENV == "production" ? true : false, // set to true when on prod (https only)
 		maxAge: 86400,
 		sameSite: "Strict",
 		httpOnly: true,

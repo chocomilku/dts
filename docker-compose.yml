@@ -25,7 +25,6 @@ services:
     ports:
       - "54321:54321"
     environment:
-      - NODE_ENV=development
       - REDIS_CONN=redis://redis:6379
     depends_on:
       - redis
@@ -44,7 +43,6 @@ services:
     ports:
       - "54321:54321"
     environment:
-      - NODE_ENV=production
       - REDIS_CONN=redis://redis:6379
     depends_on:
       - redis
@@ -61,6 +59,7 @@ services:
       - ./client:/srv
       - caddy_data:/data
       - caddy_config:/config
+      - ./logs:/var/log/caddy/
     ports:
       - 80:80
       - 443:443
@@ -80,6 +79,7 @@ services:
       - ./client:/srv
       - caddy_data:/data
       - caddy_config:/config
+      - ./logs:/var/log/caddy/
     ports:
       - 80:80
       - 443:443

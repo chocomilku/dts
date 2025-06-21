@@ -31,7 +31,6 @@ coverage/
 Thumbs.db
 
 # Logs
-logs/
 *.log
 
 # IDEs and editors

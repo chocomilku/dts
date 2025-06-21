@@ -7,7 +7,7 @@ import { departments } from "./models/departments";
 import { documents } from "./models/documents";
 import { documentLogs } from "./models/documentLog";
 
-const dbPath = path.join("/database/", "db.sqlite");
+const dbPath = path.join(process.cwd(), "../database/db.sqlite");
 const sqliteProvider = new Database(dbPath);
 
 const db = drizzle({

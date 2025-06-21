@@ -23,9 +23,13 @@ export const documents = sqliteTable("documents", {
 		.notNull(),
 	assignedUser: int().references(() => users.id),
 	assignedDepartment: int().references(() => departments.id),
-	createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
+	createdAt: text()
+		.default(sql`(CURRENT_TIMESTAMP)`)
+		.notNull(),
 	lastUpdatedAt: text().default(sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type Doc = typeof documents.$inferSelect;
 
 export const zDocuments = z.object({
 	title: z.preprocess(emptyString, z.string()),

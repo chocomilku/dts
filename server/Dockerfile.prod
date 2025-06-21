@@ -1,9 +1,10 @@
 FROM oven/bun:1 AS base
-WORKDIR /usr/app
+ENV NODE_ENV production
+WORKDIR /app
 
 COPY . .
 
-RUN bun install
+RUN bun install --production
 
 EXPOSE 54321
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT [ "./entrypoint.sh" ]

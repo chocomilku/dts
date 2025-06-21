@@ -33,8 +33,12 @@ export const documentLogs = sqliteTable("documentLogs", {
 	}).notNull(),
 	logMessage: text().notNull(),
 	additionalDetails: text(),
-	timestamp: text().default(sql`(CURRENT_TIMESTAMP)`),
+	timestamp: text()
+		.default(sql`(CURRENT_TIMESTAMP)`)
+		.notNull(),
 });
+
+export type DocLog = typeof documentLogs.$inferSelect;
 
 export const zDocumentLogs = z.object({
 	action: z.enum([

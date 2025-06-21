@@ -6,12 +6,13 @@ import { SQLiteError } from "bun:sqlite";
 import { usernameProvider } from "@utils/usernameProvider";
 import { z } from "zod";
 import { eq, getTableColumns } from "drizzle-orm";
-import { departments as departmentsModel } from "@db/models/departments";
-import { sessionAuth } from "@middlewares/sessionAuth";
+import {
+	Department,
+	departments as departmentsModel,
+} from "@db/models/departments";
+import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
 
-type Variables = {
-	userId: number; // from sessionAuth
-};
+type Variables = {} & SessionAuthVariables;
 
 const userRouter = new Hono<{ Variables: Variables }>();
 
@@ -70,26 +71,20 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 //#region user @me - GET
 userRouter.get("/@me", sessionAuth("any"), async (c) => {
 	try {
-		const userId = c.get("userId");
+		const user = c.get("user");
 
-		const { password, departmentId, ...usersRest } =
-			getTableColumns(usersModel);
-		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
+		const { id, name } = getTableColumns(departmentsModel);
 
-		const data = await db
-			.select({ ...usersRest, department: deptRest })
-			.from(usersModel)
-			.leftJoin(
-				departmentsModel,
-				eq(usersModel.departmentId, departmentsModel.id)
-			)
-			.limit(1)
-			.where(eq(usersModel.id, userId));
+		const userDepartment = await db
+			.select({ id, name })
+			.from(departmentsModel)
+			.where(eq(departmentsModel.id, user.departmentId))
+			.limit(1);
 
-		if (data.length != 1) {
-			c.status(404);
-			return c.json({ message: "User not found." });
-		}
+		let department = userDepartment.length != 1 ? null : userDepartment[0];
+
+		const { departmentId: _, ...userRest } = user;
+		const data = { ...userRest, department };
 
 		c.status(200);
 		return c.json({ message: "OK", data });
@@ -190,6 +185,7 @@ userRouter.put(
 	async (c) => {
 		const validatedForm = c.req.valid("form");
 		const { id } = c.req.param();
+		const requester = c.get("user");
 
 		const querySchema = z.coerce.number().int().positive();
 		const parsedData = querySchema.safeParse(id);
@@ -199,7 +195,7 @@ userRouter.put(
 			return c.json(parsedData.error);
 		}
 
-		const safeId = parsedData.data;
+		const targetUserId = parsedData.data;
 		let newPasswordHash = undefined;
 
 		if (validatedForm?.password) {
@@ -209,26 +205,12 @@ userRouter.put(
 		try {
 			const { role, departmentId } = getTableColumns(usersModel);
 
-			// fetch requester
-			const requesterData = await db
-				.select({ role, departmentId })
-				.from(usersModel)
-				.limit(1)
-				.where(eq(usersModel.id, c.get("userId")));
-
-			if (requesterData.length !== 1) {
-				c.status(403);
-				return c.json({ message: "Requester not found." });
-			}
-
-			const requester = requesterData[0];
-
 			// fetch target user
 			const targetUserData = await db
 				.select({ departmentId })
 				.from(usersModel)
 				.limit(1)
-				.where(eq(usersModel.id, safeId));
+				.where(eq(usersModel.id, targetUserId));
 
 			if (targetUserData.length !== 1) {
 				c.status(404);
@@ -246,7 +228,7 @@ userRouter.put(
 					});
 				}
 			} else if (requester.role == "clerk" || requester.role == "officer") {
-				if (c.get("userId") != safeId) {
+				if (requester.id != targetUserId) {
 					c.status(403);
 					return c.json({ message: "You can only edit your own data." });
 				}
@@ -273,7 +255,7 @@ userRouter.put(
 					departmentId: validatedForm?.departmentId,
 					password: newPasswordHash,
 				})
-				.where(eq(usersModel.id, safeId));
+				.where(eq(usersModel.id, targetUserId));
 
 			c.status(204);
 			return c.json({});

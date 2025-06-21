@@ -13,7 +13,7 @@ app.use(poweredBy());
 app.use(secureHeaders());
 app.use(logger());
 
-if (process.env.NODE_ENV == "development") {
+if (process.env.NODE_ENV != "production") {
 	app.use(
 		"*",
 		cors({
