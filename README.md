@@ -68,9 +68,9 @@ This project is licensed under MIT License.
 - ~~**collapisble users**~~ \
   ~~show id role username (visible to admins only [intercept API level])~~ \
 
-- **department pages** \
+- ~~**department pages**~~ \
   ~~add description (hmmm)~~ \
-  list members
+  ~~list members~~
 
 - **document aging (default to 2 weeks from creation)** \
   `dueAt: timestamp`
