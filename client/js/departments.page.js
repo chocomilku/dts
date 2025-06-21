@@ -17,9 +17,12 @@ const loadDepartments = async () => {
         const mainContent = document.querySelector(".main-content");
         if (!mainContent) return;
 
+        let deptCollapseCount = 1;
+
         // Create and append a thread-item for each department
         departments.data.forEach(dept => {
             const threadItem = document.createElement("div");
+            const collapseId = `dept-collapse-${deptCollapseCount++}`
             threadItem.className = "thread-item";
             threadItem.innerHTML = `
                 <div class="thread-visible">
@@ -30,9 +33,20 @@ const loadDepartments = async () => {
                             </h3>
                         </div>
                         <span>
-                            ID: ${dept.id} | Members: ?
+                            <b>Members</b>: ${dept.members ?? "Unknown"}
                         </span>
                     </div>
+                    <div class="profile__dropdown">
+                        <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#${collapseId}" aria-expanded="false"
+                        aria-controls="${collapseId}">▼</button>
+                    </div>
+                </div>
+                <div class="thread-collapse collapse" id="${collapseId}">
+                <hr>
+                    <div><b>ID</b> <span>${dept.id ?? "Unknown"}</span></div>
+                    <div><b>Members</b> <span>${dept.members ?? "Unknown"}</span></div>
+                    <div><b>Created At</b> <span>${dept.createdAt ?? "Unknown"}</span></div>
                 </div>
             `;
             mainContent.appendChild(threadItem);

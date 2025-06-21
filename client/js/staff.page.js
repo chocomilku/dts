@@ -1,4 +1,4 @@
-/**@import {DepartmentsResponse, Department, UsersResponse, User, UserRoles} from "./constants.js" */
+/**@import {DepartmentsResponse, UsersResponse, User} from "./constants.js" */
 import { API_URL } from "./constants.js";
 import { statusRedirect } from "./statusRedirect.js";
 import { getUserData } from "./fetchHelpers.js";

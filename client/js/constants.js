@@ -18,6 +18,8 @@ export const API_URL = "";
  * @typedef {object} Department
  * @property {number} id
  * @property {string} name
+ * @property {number | null} members
+ * @property {number | null} createdAt
  */
 
 /**

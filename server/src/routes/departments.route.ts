@@ -3,11 +3,12 @@ import {
 	zDepartments,
 	departments as departmentsModel,
 } from "@db/models/departments";
+import { users as usersModel } from "@db/models/users";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { SQLiteError } from "bun:sqlite";
 import { sessionAuth } from "@middlewares/sessionAuth";
-import { desc, getTableColumns, eq } from "drizzle-orm";
+import { desc, getTableColumns, eq, count } from "drizzle-orm";
 import { z } from "zod";
 
 const departmentRouter = new Hono();
@@ -39,7 +40,7 @@ departmentRouter.get("/:id", sessionAuth("any"), async (c) => {
 		}
 
 		const safeId = parsedData.data.id;
-		const { createdAt, ...deptsRest } = getTableColumns(departmentsModel);
+		const { ...deptsRest } = getTableColumns(departmentsModel);
 
 		const data = await db
 			.select({ ...deptsRest })
@@ -65,11 +66,13 @@ departmentRouter.get("/:id", sessionAuth("any"), async (c) => {
 //#region departments - GET ALL
 departmentRouter.get("/", sessionAuth("any"), async (c) => {
 	try {
-		const { createdAt, ...deptsRest } = getTableColumns(departmentsModel);
+		const { ...deptsRest } = getTableColumns(departmentsModel);
 
 		const data = await db
-			.select({ ...deptsRest })
+			.select({ ...deptsRest, members: count(usersModel.departmentId) })
 			.from(departmentsModel)
+			.leftJoin(usersModel, eq(departmentsModel.id, usersModel.departmentId))
+			.groupBy(departmentsModel.id)
 			.orderBy(desc(departmentsModel.id));
 
 		c.status(200);
