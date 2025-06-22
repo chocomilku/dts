@@ -22,6 +22,11 @@ import {
 	exists,
 	count,
 	ne,
+	between,
+	gt,
+	isNull,
+	isNotNull,
+	lte,
 } from "drizzle-orm";
 import { User, users as usersModel } from "@db/models/users";
 import {
@@ -85,6 +90,7 @@ const getAllDocumentsQuerySchema = z.object({
 	department: z.coerce.number().optional().catch(undefined),
 	status: z.enum(["open", "closed"]).optional().catch(undefined),
 	assigned: z.stringbool().optional().catch(undefined),
+	overdue: z.stringbool().optional().catch(undefined),
 	q: z.string().optional().catch(undefined),
 	sort: z
 		.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
@@ -131,6 +137,30 @@ documentRouter.get(
 
 				if (assignedFilter) {
 					filters.push(assignedFilter);
+				}
+			}
+
+			if (parsedQuery.overdue != undefined) {
+				let overdueFilter;
+
+				if (parsedQuery.overdue == true) {
+					overdueFilter = and(
+						isNotNull(documentsModel.dueAt),
+						eq(documentsModel.status, "open"),
+						lte(documentsModel.dueAt, sql`(datetime(CURRENT_TIMESTAMP))`)
+					);
+				} else {
+					overdueFilter = and(
+						eq(documentsModel.status, "open"),
+						or(
+							isNull(documentsModel.dueAt),
+							gt(documentsModel.dueAt, sql`(datetime(CURRENT_TIMESTAMP))`)
+						)
+					);
+				}
+
+				if (overdueFilter) {
+					filters.push(overdueFilter);
 				}
 			}
 
@@ -228,7 +258,7 @@ documentRouter.get(
 				.offset(parsedQuery.offset)
 				.orderBy(...orderByClauses);
 
-			// console.log(sqlQuery.toSQL());
+			console.log(sqlQuery.toSQL());
 
 			const data = await sqlQuery;
 
