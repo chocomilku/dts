@@ -2,7 +2,7 @@
 // jquery 😭😭😭
 
 /**@import {UsersResponse} from "./constants.js" */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer } from "./constants.js";
 import { redirect, statusRedirect } from "./statusRedirect.js";
 
 const getUsers = async () => {
@@ -230,7 +230,7 @@ const submitHandling = async () => {
                 type: docTypeValue,
                 details: detailsValue,
                 signatory: signatoryValue,
-                dueAt: new Date(dueDateValue.value).toISOString()
+                dueAt: dueDateValue.value ? new Date(dueDateValue.value).toISOString() : undefined
             }),
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",

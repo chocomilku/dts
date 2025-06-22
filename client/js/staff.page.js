@@ -1,5 +1,5 @@
 /**@import {DepartmentsResponse, UsersResponse, User} from "./constants.js" */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer } from "./constants.js";
 import { statusRedirect } from "./statusRedirect.js";
 import { getUserData } from "./fetchHelpers.js";
 
@@ -74,7 +74,7 @@ function createStaffThreadItem(user) {
         <div class="thread-collapse collapse" id="${collapseId}">
                 <hr>
                 <div><b>Role</b> <span>${user.role ?? "Unknown"}</span></div>
-                <div><b>Created At</b> <span>${user.createdAt ?? "Unknown"}</span></div>
+                <div><b>Created At</b> <span>${user.createdAt ? dbDateTransformer(user.createdAt).toLocaleString() : "Unknown"}</span></div>
                 ${user.username ? `<div><b>Username</b> <span>${user.username}</span></div>` : ""}
         </div>
     `;

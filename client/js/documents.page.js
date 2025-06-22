@@ -1,5 +1,5 @@
 /** @import { DocumentsResponse, DepartmentsResponse } from "./constants.js" */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
@@ -242,7 +242,9 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
                 <div><b>Created By</b> <span>${author ? `${author.name} (${author.department?.name ?? ""})` : "Unknown"}</span></div>
                 <div><b>Currently Assigned To</b> <span>${assignedTo}</span></div>
                 <div><b>Signatory</b> <span>${signatory ? `${signatory.name} (${signatory.department?.name ?? ""})` : "Unknown"}</span></div>
-                <div><b>Last Updated At</b> <span>${doc.lastUpdatedAt ?? ""}</span></div>
+                <div><b>Created At</b> <span>${doc.createdAt ? dbDateTransformer(doc.createdAt).toLocaleString() : "Unknown"}</span></div>
+                <div><b>Last Updated At</b> <span>${doc.lastUpdatedAt ? dbDateTransformer(doc.lastUpdatedAt).toLocaleString() : "Unknown"}</span></div>
+                <div><b>Due At</b> <span>${doc.dueAt ? dbDateTransformer(doc.dueAt).toLocaleString() : "No Due Date"}</span></div>
               </div>
             `;
             docList.appendChild(threadItem);

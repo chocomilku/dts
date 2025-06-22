@@ -1,6 +1,15 @@
 export const API_URL = "";
 
 /**
+ * transforms string-based dates into Date object.
+ * @param {string} date date from database that is in UTC without `Z` at the end.
+ * @returns {Date}
+ */
+export function dbDateTransformer(date) {
+    return new Date(`${date}Z`)
+}
+
+/**
  * @typedef {"superadmin" | "admin" | "clerk" | "officer"} UserRoles
  */
 
@@ -19,7 +28,7 @@ export const API_URL = "";
  * @property {number} id
  * @property {string} name
  * @property {number | null} members
- * @property {number | null} createdAt
+ * @property {string | null} createdAt
  * @property {string | null} description
  */
 
@@ -38,6 +47,7 @@ export const API_URL = "";
  * @property {number|null} assignedDepartment
  * @property {string|null} createdAt
  * @property {string|null} lastUpdatedAt
+ * @property {string|null} dueAt
  */
 
 /**

@@ -3,7 +3,7 @@
  * @module document-page
  * @import { DocumentsResponse, DepartmentsResponse, UsersResponse, DocumentLogsResponse, Document, User } from "./constants.js"
  */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
@@ -142,8 +142,9 @@ async function renderDocumentDetails(doc, currentUser) {
             { key: "Author", value: `${authorData?.name || "Unknown"} (${authorData?.department?.name || "No Department"})` },
             { key: "Currently Assigned to", value: assignedTo },
             { key: "Signatory", value: `${signatoryData?.name || "Unknown"} (${signatoryData?.department?.name || "No Department"})` },
-            { key: "Created At", value: doc.createdAt || "Unknown" },
-            { key: "Last Updated At", value: doc.lastUpdatedAt || "Unknown" },
+            { key: "Created At", value: doc.createdAt ? dbDateTransformer(doc.createdAt).toLocaleString() : "Unknown" },
+            { key: "Last Updated At", value: doc.lastUpdatedAt ? dbDateTransformer(doc.lastUpdatedAt).toLocaleString() : "Unknown" },
+            { key: "Due At", value: doc.dueAt ? dbDateTransformer(doc.dueAt).toLocaleString() : "No Due Date" },
         ];
 
         // Update DOM content
@@ -583,7 +584,7 @@ async function renderDocumentThread(doc) {
                 <div class="thread-visible">
                     <div>
                         <div class="thread-top">
-                            <h4 class="thread-top__text">${log.timestamp || "Unknown"} — ${locationName}
+                            <h4 class="thread-top__text">${log.timestamp ? dbDateTransformer(log.timestamp).toLocaleString() : "Unknown"} — ${locationName}
                                 <span class="badge ${badgeClass} rounded-pill fs-6">${capitalizeFirst(log.action)}</span>
                             </h4>
                         </div>
