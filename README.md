@@ -72,7 +72,7 @@ This project is licensed under MIT License.
   ~~add description (hmmm)~~ \
   ~~list members~~
 
-- **document aging (default to 2 weeks from creation)** \
+- ~~**document aging (default to 2 weeks from creation)**~~ \
   `dueAt: timestamp`
 
 - **overdue filter** \
