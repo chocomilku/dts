@@ -27,6 +27,7 @@ export const documents = sqliteTable("documents", {
 		.default(sql`(CURRENT_TIMESTAMP)`)
 		.notNull(),
 	lastUpdatedAt: text().default(sql`(CURRENT_TIMESTAMP)`),
+	dueAt: text(),
 });
 
 export type Doc = typeof documents.$inferSelect;
