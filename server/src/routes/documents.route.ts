@@ -694,7 +694,7 @@ documentRouter.post(
 					? sql`(datetime(CURRENT_TIMESTAMP, ${DEFAULT_DUE_DATE}))`
 					: sql`(datetime(${form.dueAt}))`;
 
-			const dq = db
+			const insertedDoc = await db
 				.insert(documentsModel)
 				.values({
 					trackingNumber: await trackingNumberProvider(),
@@ -713,10 +713,6 @@ documentRouter.post(
 					id: documentsModel.id,
 					trackingNumber: documentsModel.trackingNumber,
 				});
-
-			console.log(dq.toSQL());
-
-			const insertedDoc = await dq;
 
 			await db.insert(documentLogsModel).values({
 				document: insertedDoc[0].id,

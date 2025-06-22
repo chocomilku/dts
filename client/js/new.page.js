@@ -3,7 +3,7 @@
 
 /**@import {UsersResponse} from "./constants.js" */
 import { API_URL } from "./constants.js";
-import { statusRedirect } from "./statusRedirect.js";
+import { redirect, statusRedirect } from "./statusRedirect.js";
 
 const getUsers = async () => {
     try {
@@ -162,7 +162,40 @@ const docTypes = [
     { id: "Zoning Clearance", text: "Zoning Clearance" }
 ];
 
+const DEFAULT_DUE_DATE = 14;
+
+// Convert to local ISO string format suitable for datetime-local input
+const getLocalDateTimeString = (str) => {
+    let now;
+
+    if (str) {
+        now = new Date(str);
+    } else {
+        now = new Date();
+    }
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const dueAtPickerStartup = () => {
+    const now = new Date();
+    const picker = document.getElementById("dueAt");
+    if (!(picker instanceof HTMLInputElement)) return;
+
+    picker.min = getLocalDateTimeString();
+
+    now.setDate(now.getDate() + DEFAULT_DUE_DATE);
+    picker.value = getLocalDateTimeString(now);
+}
+
 const submitHandling = async () => {
+    const alertPlaceholder = document.getElementById("alert-placeholder");
     const formElem = document.getElementById("new-doc-form");
     const btn = document.getElementById("form-submit");
 
@@ -183,6 +216,8 @@ const submitHandling = async () => {
 
         /** @type {HTMLInputElement} */
         const titleValue = formElem.elements["title"]
+        /** @type {HTMLInputElement} */
+        const dueDateValue = formElem.elements["dueAt"]
 
         const docTypeValue = $("#docType").select2('data')[0].id
         const signatoryValue = $("#signatory").select2('data')[0].id
@@ -194,7 +229,8 @@ const submitHandling = async () => {
                 title: titleValue.value,
                 type: docTypeValue,
                 details: detailsValue,
-                signatory: signatoryValue
+                signatory: signatoryValue,
+                dueAt: new Date(dueDateValue.value).toISOString()
             }),
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -220,10 +256,12 @@ const submitHandling = async () => {
             btn.disabled = true;
             btn.innerHTML = data.message;
             setTimeout(() => {
-                window.location.href = `/documents/${data.insertedData[0].trackingNumber}`
+                redirect(`/documents/${data.insertedData[0].trackingNumber}`, "href")
             }, 1000)
         }
     })
 }
 
+
+document.addEventListener("DOMContentLoaded", dueAtPickerStartup);
 document.addEventListener("DOMContentLoaded", submitHandling);
