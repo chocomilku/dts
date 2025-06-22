@@ -650,7 +650,6 @@ documentRouter.patch(
 					form.status == "closed" ? "closed" : "reopen",
 					author.name
 				),
-				additionalDetails: form.additionalDetails,
 			});
 
 			await db
@@ -683,8 +682,19 @@ documentRouter.post(
 		try {
 			const author = c.get("user");
 			const form = c.req.valid("form");
+			console.log(form.dueAt);
+			console.log(typeof form.dueAt);
 
-			const insertedDoc = await db
+			const DEFAULT_DUE_DATE = "+14 days";
+
+			const dueDate =
+				form.dueAt === null
+					? null
+					: form.dueAt === undefined
+					? sql`(datetime(CURRENT_TIMESTAMP, ${DEFAULT_DUE_DATE}))`
+					: sql`(datetime(${form.dueAt}))`;
+
+			const dq = db
 				.insert(documentsModel)
 				.values({
 					trackingNumber: await trackingNumberProvider(),
@@ -697,11 +707,16 @@ documentRouter.post(
 					originDepartment: author.departmentId,
 					assignedUser: author.id,
 					assignedDepartment: null,
+					dueAt: dueDate,
 				})
 				.returning({
 					id: documentsModel.id,
 					trackingNumber: documentsModel.trackingNumber,
 				});
+
+			console.log(dq.toSQL());
+
+			const insertedDoc = await dq;
 
 			await db.insert(documentLogsModel).values({
 				document: insertedDoc[0].id,
