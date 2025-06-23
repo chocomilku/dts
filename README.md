@@ -84,7 +84,7 @@ This project is licensed under MIT License.
 
 - ~~dashboard overdue count~~
 
-- documents overdue filter
+- ~~documents overdue filter~~
 
 - server side due date check
 

@@ -121,6 +121,7 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
     const departmentEl = document.getElementById("department");
     const statusEl = document.getElementById("status");
     const assignedEl = document.getElementById("assigned");
+    const overdueEl = document.getElementById("overdue");
     const sortEl = document.getElementById("sort");
     const entriesEl = document.getElementById("entries");
     const searchEl = document.getElementById("search");
@@ -142,6 +143,11 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
         params.append("assigned", "false");
     }
 
+    if (overdueEl && overdueEl instanceof HTMLSelectElement && overdueEl.value === "yes") {
+        params.append("overdue", "true");
+    } else if (overdueEl && overdueEl instanceof HTMLSelectElement && overdueEl.value === "no") {
+        params.append("overdue", "false");
+    }
 
     if (sortEl && sortEl instanceof HTMLSelectElement && sortEl.value) {
         params.append("sort", sortEl.value);
@@ -311,14 +317,14 @@ document.addEventListener("DOMContentLoaded", async () => { // Made async
     }
 
     // Add event listeners for filters to reset to page 1
-    document.getElementById("department")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("status")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("assigned")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("sort")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("entries")?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    const changeEventListenersId = ["department", "status", "assigned", "overdue", "sort", "entries"]
+
+    changeEventListenersId.forEach((el) => {
+        document.getElementById(el)?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    })
 
     const searchInput = document.getElementById("search");
-    const searchButton = document.getElementById("searchBtn"); // Corrected ID from search-button to searchBtn
+    const searchButton = document.getElementById("searchBtn");
 
     const performSearch = () => fetchAndRenderDocuments(1);
 
