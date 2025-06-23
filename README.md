@@ -86,7 +86,7 @@ This project is licensed under MIT License.
 
 - ~~documents overdue filter~~
 
-- server side due date check
+- ~~server side due date check~~
 
 - department / staff pages show no results
 
