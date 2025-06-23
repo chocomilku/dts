@@ -1,3 +1,7 @@
+/**@import { BadgeType } from "./fetchHelpers.js" */
+import { badgeColorProvider } from "./fetchHelpers.js";
+
+
 export const API_URL = "";
 
 /**
@@ -107,3 +111,25 @@ export function dbDateTransformer(date) {
  */
 
 //#endregion
+
+/**
+ * Formats the first letter of a string to uppercase
+ * @param {string} str - The string to capitalize
+ * @returns {string} The capitalized string
+ */
+export function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * @param {BadgeType} badge
+ * @param {string} [altText]
+ * @returns {HTMLSpanElement}
+ */
+export const pillBadgeProvider = (badge, altText) => {
+    const badgeElement = window.document.createElement("span");
+    badgeElement.className = `badge ${badgeColorProvider(badge)} rounded-pill ms-2`
+    badgeElement.textContent = altText ?? capitalizeFirst(badge);
+    return badgeElement
+}

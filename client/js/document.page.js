@@ -3,7 +3,7 @@
  * @module document-page
  * @import { DocumentsResponse, DepartmentsResponse, UsersResponse, DocumentLogsResponse, Document, User } from "./constants.js"
  */
-import { API_URL, dbDateTransformer } from "./constants.js";
+import { API_URL, dbDateTransformer, pillBadgeProvider } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
@@ -161,19 +161,26 @@ async function renderDocumentDetails(doc, currentUser) {
         }
         siblings.forEach(sibling => sibling.remove());
 
+        /**@type {HTMLSpanElement[]} */
+        const badges = [];
+
         // Add status badge
-        const badge = window.document.createElement("span");
-        badge.className = `badge ${badgeColorProvider(doc.status)} rounded-pill ms-2`;
-        badge.textContent = capitalizeFirst(doc.status);
-        docTrackingNumber.after(badge);
+        badges.push(pillBadgeProvider(doc.status));
 
         // Add assigned badge if applicable
         if (isAssignedToMe) {
-            const assignedBadge = window.document.createElement("span");
-            assignedBadge.className = `badge ${badgeColorProvider("assign")} rounded-pill ms-2`;
-            assignedBadge.textContent = "Assigned";
-            badge.after(assignedBadge);
+            badges.push(pillBadgeProvider("assign", "Assigned"));
         }
+
+        const isOverdue = doc.dueAt === null ? false : new Date(doc.dueAt) <= new Date() ? true : false;
+
+        if (isOverdue) {
+            badges.push(pillBadgeProvider("overdue"));
+        }
+
+        badges.forEach((el) => {
+            docTrackingNumber.parentElement?.insertAdjacentElement("beforeend", el)
+        })
 
         docTitle.innerText = doc.title || "Untitled Document";
         docDetails.innerHTML = doc.details || "";

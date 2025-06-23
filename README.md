@@ -75,10 +75,10 @@ This project is licensed under MIT License.
 - ~~**document aging (default to 2 weeks from creation)**~~ \
   `dueAt: timestamp`
 
-- **overdue filter** \
-  overdue if `dueAt > createdAt`
+- ~~**overdue filter**~~ \
+  ~~overdue if `dueAt > createdAt`~~
 
-- **overdue badge**
+- ~~**overdue badge**~~
 
 - **feedback form**
 

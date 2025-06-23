@@ -258,7 +258,7 @@ documentRouter.get(
 				.offset(parsedQuery.offset)
 				.orderBy(...orderByClauses);
 
-			console.log(sqlQuery.toSQL());
+			// console.log(sqlQuery.toSQL());
 
 			const data = await sqlQuery;
 

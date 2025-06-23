@@ -72,7 +72,7 @@ export async function getUserData(id) {
 
 /**
  * Badge types for badgeColorProvider.
- * @typedef {"open"|"reopen"|"created"|"approve"|"transfer"|"receive"|"assign"|"closed"|"deny"|string} BadgeType
+ * @typedef {"open"|"reopen"|"created"|"approve"|"transfer"|"receive"|"assign"|"closed"|"deny"|"overdue"|string} BadgeType
  */
 
 /**
@@ -100,6 +100,7 @@ export const badgeColorProvider = (type) => {
 
         case "closed":
         case "deny":
+        case "overdue":
             return `bg-danger-subtle text-danger-emphasis`
 
         default:
