@@ -194,13 +194,32 @@ const dueAtPickerStartup = () => {
     picker.value = getLocalDateTimeString(now);
 }
 
+document.addEventListener("click", (e) => {
+    const dueDateToggle = document.getElementById("dueDateToggle");
+    if (!(dueDateToggle instanceof HTMLInputElement)) return;
+
+    const dueAtElement = document.getElementById("dueAt");
+    if (!(dueAtElement instanceof HTMLInputElement)) return;
+
+    if (dueDateToggle.checked) {
+        dueAtElement.required = true
+    } else {
+        dueAtElement.required = false
+    }
+
+})
+
 const submitHandling = async () => {
     const alertPlaceholder = document.getElementById("alert-placeholder");
     const formElem = document.getElementById("new-doc-form");
     const btn = document.getElementById("form-submit");
+    const dueDateToggle = document.getElementById("dueDateToggle");
 
     if (!(formElem instanceof HTMLFormElement)) return;
     if (!(btn instanceof HTMLButtonElement)) return;
+    if (!(dueDateToggle instanceof HTMLInputElement)) return;
+
+    dueDateToggle.checked = false;
 
     formElem.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -218,20 +237,28 @@ const submitHandling = async () => {
         const titleValue = formElem.elements["title"]
         /** @type {HTMLInputElement} */
         const dueDateValue = formElem.elements["dueAt"]
+        /** @type {HTMLInputElement} */
+        const dueDateToggle = formElem.elements["dueDateToggle"]
 
         const docTypeValue = $("#docType").select2('data')[0].id
         const signatoryValue = $("#signatory").select2('data')[0].id
         const detailsValue = $('#summernote').summernote('code');
+        const dueAtValue = dueDateToggle.checked == false ? null : new Date(dueDateValue.value).toISOString()
+
+        const reqBody = new URLSearchParams({
+            title: titleValue.value,
+            type: docTypeValue,
+            details: detailsValue,
+            signatory: signatoryValue,
+        })
+
+        if (dueAtValue !== null) {
+            reqBody.append("dueAt", dueAtValue);
+        }
 
         const res = await fetch(`${API_URL}/api/documents`, {
             method: "POST",
-            body: new URLSearchParams({
-                title: titleValue.value,
-                type: docTypeValue,
-                details: detailsValue,
-                signatory: signatoryValue,
-                dueAt: dueDateValue.value ? new Date(dueDateValue.value).toISOString() : undefined
-            }),
+            body: reqBody,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
@@ -261,7 +288,6 @@ const submitHandling = async () => {
         }
     })
 }
-
 
 document.addEventListener("DOMContentLoaded", dueAtPickerStartup);
 document.addEventListener("DOMContentLoaded", submitHandling);

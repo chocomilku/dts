@@ -80,6 +80,10 @@ This project is licensed under MIT License.
 
 - ~~**overdue badge**~~
 
+~~- new document page toggle no due date~~
+
+- server side due date check
+
 - **feedback form**
 
 ```

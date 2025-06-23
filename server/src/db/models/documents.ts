@@ -37,7 +37,7 @@ export const zDocuments = z.object({
 	type: z.preprocess(emptyString, z.string()),
 	details: z.preprocess(emptyString, z.string()),
 	signatory: z.coerce.number(),
-	dueAt: z.iso.datetime().nullable().optional(),
+	dueAt: z.iso.datetime().nullish(),
 });
 
 export const zDocumentsStatus = z.object({

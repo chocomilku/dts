@@ -712,17 +712,8 @@ documentRouter.post(
 		try {
 			const author = c.get("user");
 			const form = c.req.valid("form");
-			console.log(form.dueAt);
-			console.log(typeof form.dueAt);
 
-			const DEFAULT_DUE_DATE = "+14 days";
-
-			const dueDate =
-				form.dueAt === null
-					? null
-					: form.dueAt === undefined
-					? sql`(datetime(CURRENT_TIMESTAMP, ${DEFAULT_DUE_DATE}))`
-					: sql`(datetime(${form.dueAt}))`;
+			const dueDate = !form.dueAt ? null : sql`(datetime(${form.dueAt}))`;
 
 			const insertedDoc = await db
 				.insert(documentsModel)
