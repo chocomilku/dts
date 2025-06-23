@@ -1,18 +1,7 @@
 /**@import { BadgeType } from "./fetchHelpers.js" */
 import { badgeColorProvider } from "./fetchHelpers.js";
 
-
-export const API_URL = "";
-
-/**
- * transforms string-based dates into Date object.
- * @param {string} date date from database that is in UTC without `Z` at the end.
- * @returns {Date}
- */
-export function dbDateTransformer(date) {
-    return new Date(`${date}Z`)
-}
-
+//#region Types
 /**
  * @typedef {"superadmin" | "admin" | "clerk" | "officer"} UserRoles
  */
@@ -82,8 +71,9 @@ export function dbDateTransformer(date) {
  * @property {string} message
  * @property {DocumentLog[]} data
  */
+//#endregion
 
-//#region Responses
+//#region Responses Types
 /**
  * @typedef {object} UsersResponse
  * @property {string} message
@@ -104,13 +94,33 @@ export function dbDateTransformer(date) {
  * @property {PaginationInfo} pagination
  */
 
+/** 
+ * @typedef {object} DocumentCounters 
+ * @property {number} openCount
+ * @property {number} closedCount
+ * @property {number} assignedCount
+ * @property {number} assignedOverdueCount
+*/
+
 /**
  * @typedef {object} DocumentCountResponse
  * @property {string} message
- * @property {{ openCount: number, closedCount: number, assignedCount: number }} data
+ * @property {DocumentCounters} data
  */
 
 //#endregion
+
+//#region Utility Functions
+export const API_URL = "";
+
+/**
+ * transforms string-based dates into Date object.
+ * @param {string} date date from database that is in UTC without `Z` at the end.
+ * @returns {Date}
+ */
+export function dbDateTransformer(date) {
+    return new Date(`${date}Z`)
+}
 
 /**
  * Formats the first letter of a string to uppercase
@@ -133,3 +143,4 @@ export const pillBadgeProvider = (badge, altText) => {
     badgeElement.textContent = altText ?? capitalizeFirst(badge);
     return badgeElement
 }
+//#endregion

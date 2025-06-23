@@ -82,7 +82,9 @@ This project is licensed under MIT License.
 
 ~~- new document page toggle no due date~~
 
-- dashboard overdue count
+- ~~dashboard overdue count~~
+
+- documents overdue filter
 
 - server side due date check
 

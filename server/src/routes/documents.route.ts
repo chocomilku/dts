@@ -65,6 +65,18 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 				eq(documentsModel.assignedDepartment, user.departmentId)
 			)
 		);
+		const assignedOverdueCount = await db.$count(
+			documentsModel,
+			and(
+				or(
+					eq(documentsModel.assignedUser, user.id),
+					eq(documentsModel.assignedDepartment, user.departmentId)
+				),
+				isNotNull(documentsModel.dueAt),
+				eq(documentsModel.status, "open"),
+				lte(documentsModel.dueAt, sql`(datetime(CURRENT_TIMESTAMP))`)
+			)
+		);
 
 		c.status(200);
 		return c.json({
@@ -73,6 +85,7 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 				openCount,
 				closedCount,
 				assignedCount,
+				assignedOverdueCount,
 			},
 		});
 	} catch (e) {
