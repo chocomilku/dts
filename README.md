@@ -82,7 +82,11 @@ This project is licensed under MIT License.
 
 ~~- new document page toggle no due date~~
 
+- dashboard overdue count
+
 - server side due date check
+
+- department / staff pages show no results
 
 - **feedback form**
 
