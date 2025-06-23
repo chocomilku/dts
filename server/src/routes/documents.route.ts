@@ -726,6 +726,21 @@ documentRouter.post(
 			const author = c.get("user");
 			const form = c.req.valid("form");
 
+			// due date checks
+			if (form.dueAt) {
+				const date = new Date(form.dueAt);
+				if (isNaN(date.valueOf())) {
+					c.status(400);
+					return c.json({ message: "Invalid Due Date." });
+				}
+
+				const isAlreadyOverdue = date <= new Date();
+				if (isAlreadyOverdue) {
+					c.status(400);
+					return c.json({ message: "Due date cannot be set in the past." });
+				}
+			}
+
 			const dueDate = !form.dueAt ? null : sql`(datetime(${form.dueAt}))`;
 
 			const insertedDoc = await db

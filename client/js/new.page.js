@@ -277,8 +277,7 @@ const submitHandling = async () => {
         if (!res.ok) {
             btn.disabled = false;
             btn.innerHTML = "Submit"
-            if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">An error occurred.</div>`;
-            console.error(await res.json());
+            if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">${data.message ?? "An error occurred."}</div>`;
         } else {
             btn.disabled = true;
             btn.innerHTML = data.message;
