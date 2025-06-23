@@ -2,8 +2,8 @@
 // jquery 😭😭😭
 
 /**@import {UsersResponse} from "./constants.js" */
-import { API_URL } from "./constants.js";
-import { statusRedirect } from "./statusRedirect.js";
+import { API_URL, dbDateTransformer } from "./constants.js";
+import { redirect, statusRedirect } from "./statusRedirect.js";
 
 const getUsers = async () => {
     try {
@@ -162,12 +162,64 @@ const docTypes = [
     { id: "Zoning Clearance", text: "Zoning Clearance" }
 ];
 
+const DEFAULT_DUE_DATE = 14;
+
+// Convert to local ISO string format suitable for datetime-local input
+const getLocalDateTimeString = (str) => {
+    let now;
+
+    if (str) {
+        now = new Date(str);
+    } else {
+        now = new Date();
+    }
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const dueAtPickerStartup = () => {
+    const now = new Date();
+    const picker = document.getElementById("dueAt");
+    if (!(picker instanceof HTMLInputElement)) return;
+
+    picker.min = getLocalDateTimeString();
+
+    now.setDate(now.getDate() + DEFAULT_DUE_DATE);
+    picker.value = getLocalDateTimeString(now);
+}
+
+document.addEventListener("click", (e) => {
+    const dueDateToggle = document.getElementById("dueDateToggle");
+    if (!(dueDateToggle instanceof HTMLInputElement)) return;
+
+    const dueAtElement = document.getElementById("dueAt");
+    if (!(dueAtElement instanceof HTMLInputElement)) return;
+
+    if (dueDateToggle.checked) {
+        dueAtElement.required = true
+    } else {
+        dueAtElement.required = false
+    }
+
+})
+
 const submitHandling = async () => {
+    const alertPlaceholder = document.getElementById("alert-placeholder");
     const formElem = document.getElementById("new-doc-form");
     const btn = document.getElementById("form-submit");
+    const dueDateToggle = document.getElementById("dueDateToggle");
 
     if (!(formElem instanceof HTMLFormElement)) return;
     if (!(btn instanceof HTMLButtonElement)) return;
+    if (!(dueDateToggle instanceof HTMLInputElement)) return;
+
+    dueDateToggle.checked = false;
 
     formElem.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -183,19 +235,30 @@ const submitHandling = async () => {
 
         /** @type {HTMLInputElement} */
         const titleValue = formElem.elements["title"]
+        /** @type {HTMLInputElement} */
+        const dueDateValue = formElem.elements["dueAt"]
+        /** @type {HTMLInputElement} */
+        const dueDateToggle = formElem.elements["dueDateToggle"]
 
         const docTypeValue = $("#docType").select2('data')[0].id
         const signatoryValue = $("#signatory").select2('data')[0].id
         const detailsValue = $('#summernote').summernote('code');
+        const dueAtValue = dueDateToggle.checked == false ? null : new Date(dueDateValue.value).toISOString()
+
+        const reqBody = new URLSearchParams({
+            title: titleValue.value,
+            type: docTypeValue,
+            details: detailsValue,
+            signatory: signatoryValue,
+        })
+
+        if (dueAtValue !== null) {
+            reqBody.append("dueAt", dueAtValue);
+        }
 
         const res = await fetch(`${API_URL}/api/documents`, {
             method: "POST",
-            body: new URLSearchParams({
-                title: titleValue.value,
-                type: docTypeValue,
-                details: detailsValue,
-                signatory: signatoryValue
-            }),
+            body: reqBody,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
@@ -214,16 +277,16 @@ const submitHandling = async () => {
         if (!res.ok) {
             btn.disabled = false;
             btn.innerHTML = "Submit"
-            if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">An error occurred.</div>`;
-            console.error(await res.json());
+            if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">${data.message ?? "An error occurred."}</div>`;
         } else {
             btn.disabled = true;
             btn.innerHTML = data.message;
             setTimeout(() => {
-                window.location.href = `/documents/${data.insertedData[0].trackingNumber}`
+                redirect(`/documents/${data.insertedData[0].trackingNumber}`, "href")
             }, 1000)
         }
     })
 }
 
+document.addEventListener("DOMContentLoaded", dueAtPickerStartup);
 document.addEventListener("DOMContentLoaded", submitHandling);

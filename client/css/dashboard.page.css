@@ -3,6 +3,7 @@
     --bs-pink-500: #D63384;
     --bs-blue-500: #0D6EFD;
     --bs-green-500: #198754;
+    --bs-red-500: #dc3545;
 }
 
 .counters {
@@ -16,19 +17,19 @@
 }
 
 .counter:nth-child(1) {
-    background-color: var(--bs-indigo-500);
+    background-color: var(--bs-green-500);
 }
 
 .counter:nth-child(2) {
-    background-color: var(--bs-pink-500);
+    background-color: var(--bs-indigo-500);
 }
 
 .counter:nth-child(3) {
-    background-color: var(--bs-blue-500);
+    background-color: var(--bs-red-500);
 }
 
 .counter:nth-child(4) {
-    background-color: var(--bs-green-500);
+    background-color: var(--bs-pink-500);
 }
 
 .counter {

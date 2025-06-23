@@ -72,13 +72,23 @@ This project is licensed under MIT License.
   ~~add description (hmmm)~~ \
   ~~list members~~
 
-- **document aging (default to 2 weeks from creation)** \
+- ~~**document aging (default to 2 weeks from creation)**~~ \
   `dueAt: timestamp`
 
-- **overdue filter** \
-  overdue if `dueAt > createdAt`
+- ~~**overdue filter**~~ \
+  ~~overdue if `dueAt > createdAt`~~
 
-- **overdue badge**
+- ~~**overdue badge**~~
+
+~~- new document page toggle no due date~~
+
+- ~~dashboard overdue count~~
+
+- ~~documents overdue filter~~
+
+- ~~server side due date check~~
+
+- department / staff pages show no results
 
 - **feedback form**
 

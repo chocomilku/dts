@@ -1,5 +1,5 @@
 /** @import { DepartmentsResponse } from "./constants.js" */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer } from "./constants.js";
 import { getUserData } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
@@ -48,7 +48,7 @@ const loadDepartments = async () => {
                 <hr>
                     <div><b>ID</b> <span>${dept.id ?? "Unknown"}</span></div>
                     <div><b>Members</b> <span>${dept.members ?? "Unknown"}</span></div>
-                    <div><b>Created At</b> <span>${dept.createdAt ?? "Unknown"}</span></div>
+                    <div><b>Created At</b> <span>${dept.createdAt ? dbDateTransformer(dept.createdAt).toLocaleString() : "Unknown"}</span></div>
                 </div>
             `;
             mainContent.appendChild(threadItem);

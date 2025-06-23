@@ -1,8 +1,7 @@
 /** @import { DocumentsResponse, DepartmentsResponse } from "./constants.js" */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer, pillBadgeProvider } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
-
 
 const loadDepartments = async () => {
     const departmentSelect = document.getElementById("department");
@@ -114,7 +113,6 @@ const renderPaginationControls = (pagination) => {
     paginationUl.appendChild(nextLi);
 };
 
-
 const fetchAndRenderDocuments = async (pageNumber = 1) => {
     const docList = document.getElementById("docList");
     if (!docList) return;
@@ -123,6 +121,7 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
     const departmentEl = document.getElementById("department");
     const statusEl = document.getElementById("status");
     const assignedEl = document.getElementById("assigned");
+    const overdueEl = document.getElementById("overdue");
     const sortEl = document.getElementById("sort");
     const entriesEl = document.getElementById("entries");
     const searchEl = document.getElementById("search");
@@ -144,6 +143,11 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
         params.append("assigned", "false");
     }
 
+    if (overdueEl && overdueEl instanceof HTMLSelectElement && overdueEl.value === "yes") {
+        params.append("overdue", "true");
+    } else if (overdueEl && overdueEl instanceof HTMLSelectElement && overdueEl.value === "no") {
+        params.append("overdue", "false");
+    }
 
     if (sortEl && sortEl instanceof HTMLSelectElement && sortEl.value) {
         params.append("sort", sortEl.value);
@@ -188,24 +192,59 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
         // For collapse IDs
         let threadCount = 1;
 
+        const me = await getUserData("@me");
+
         // Render documents
         for (const doc of docs) {
             // Fetch related data
             const [originDept, author, signatory] = await Promise.all([
                 getDepartmentData(doc.originDepartment),
                 getUserData(doc.author),
-                getUserData(doc.signatory)
+                getUserData(doc.signatory),
             ]);
+
+            // badges
+            /**@type {HTMLSpanElement[]} */
+            const badges = [];
+
+            // status badge
+            badges.push(pillBadgeProvider(doc.status));
 
             // Assigned to
             let assignedTo = "No one";
+            let isAssignedToMe = false;
+
             if (doc.assignedDepartment != null) {
                 const dept = await getDepartmentData(doc.assignedDepartment);
                 assignedTo = dept?.name ?? "Unknown";
+
+                if (me.department && me.department.id === doc.assignedDepartment) {
+                    isAssignedToMe = true;
+                }
+
             } else if (doc.assignedUser != null) {
                 const user = await getUserData(doc.assignedUser);
                 assignedTo = user ? `${user.name} (${user.department?.name ?? ""})` : "Unknown";
+
+                if (me.id === doc.assignedUser) {
+                    isAssignedToMe = true;
+                }
             }
+
+            if (isAssignedToMe) {
+                badges.push(pillBadgeProvider("assign", "Assigned"));
+            }
+
+            // Overdue
+            const isOverdue = doc.dueAt === null ? false : new Date(doc.dueAt) <= new Date() ? true : false;
+
+            if (isOverdue) {
+                badges.push(pillBadgeProvider("overdue"));
+            }
+
+            const badgesHtml = badges.map((b) => {
+                return b.outerHTML
+            })
 
             // Collapse ID
             const collapseId = `thread-collapse-${threadCount++}`;
@@ -219,32 +258,32 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
                   <div class="thread-top">
                     <h3>
                       <a href="/documents/${doc.trackingNumber}" class="thread-top__text">${doc.trackingNumber}
-                        <span class="badge ${badgeColorProvider(doc.status)} rounded-pill fs-6 ms-2">
-                          ${doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
-                        </span>
-                      </a>
-                    </h3>
-                  </div>
-                  <span>
-                    ${doc.title}
-                  </span>
-                </div>
-                <div class="profile__dropdown">
-                  <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#${collapseId}" aria-expanded="false"
-                    aria-controls="${collapseId}">▼</button>
-                </div>
-              </div>
-              <div class="thread-collapse collapse" id="${collapseId}">
-                <hr>
-                <div><b>Origin Department</b> <span>${originDept?.name ?? "Unknown"}</span></div>
-                <div><b>Document Type</b> <span>${doc.type}</span></div>
-                <div><b>Created By</b> <span>${author ? `${author.name} (${author.department?.name ?? ""})` : "Unknown"}</span></div>
-                <div><b>Currently Assigned To</b> <span>${assignedTo}</span></div>
-                <div><b>Signatory</b> <span>${signatory ? `${signatory.name} (${signatory.department?.name ?? ""})` : "Unknown"}</span></div>
-                <div><b>Last Updated At</b> <span>${doc.lastUpdatedAt ?? ""}</span></div>
-              </div>
-            `;
+                        ${badgesHtml.join("")}
+                      </a >
+                    </h3 >
+                  </div >
+    <span>
+        ${doc.title}
+    </span>
+                </div >
+    <div class="profile__dropdown">
+        <button class="thread-btn btn collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#${collapseId}" aria-expanded="false"
+            aria-controls="${collapseId}">▼</button>
+    </div>
+              </div >
+    <div class="thread-collapse collapse" id="${collapseId}">
+        <hr>
+            <div><b>Origin Department</b> <span>${originDept?.name ?? "Unknown"}</span></div>
+            <div><b>Document Type</b> <span>${doc.type}</span></div>
+            <div><b>Created By</b> <span>${author ? `${author.name} (${author.department?.name ?? ""})` : "Unknown"}</span></div>
+            <div><b>Currently Assigned To</b> <span>${assignedTo}</span></div>
+            <div><b>Signatory</b> <span>${signatory ? `${signatory.name} (${signatory.department?.name ?? ""})` : "Unknown"}</span></div>
+            <div><b>Created At</b> <span>${doc.createdAt ? dbDateTransformer(doc.createdAt).toLocaleString() : "Unknown"}</span></div>
+            <div><b>Last Updated At</b> <span>${doc.lastUpdatedAt ? dbDateTransformer(doc.lastUpdatedAt).toLocaleString() : "Unknown"}</span></div>
+            <div><b>Due At</b> <span>${doc.dueAt ? dbDateTransformer(doc.dueAt).toLocaleString() : "No Due Date"}</span></div>
+    </div>
+`;
             docList.appendChild(threadItem);
         }
         renderPaginationControls(pagination);
@@ -252,9 +291,9 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
     } catch (e) {
         console.error("Failed to fetch documents:", e);
         docList.innerHTML = `
-            <h2><b>Documents</b></h2>
-            <div class="alert alert-danger">Error loading documents. Please try again.</div>
-          `;
+    < h2 > <b>Documents</b></h2 >
+        <div class="alert alert-danger">Error loading documents. Please try again.</div>
+`;
         renderPaginationControls(null); // Clear/hide pagination on error
     }
 };
@@ -269,23 +308,23 @@ document.addEventListener("DOMContentLoaded", async () => { // Made async
         const docList = document.getElementById("docList");
         if (docList) {
             docList.innerHTML = `
-                <h2><b>Documents</b></h2>
-                <div class="alert alert-danger">Error initializing page. Please try refreshing.</div>
-            `;
+    < h2 > <b>Documents</b></h2 >
+        <div class="alert alert-danger">Error initializing page. Please try refreshing.</div>
+`;
         }
         const paginationUl = document.querySelector(".pagination");
         if (paginationUl) paginationUl.classList.add("d-none");
     }
 
     // Add event listeners for filters to reset to page 1
-    document.getElementById("department")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("status")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("assigned")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("sort")?.addEventListener("change", () => fetchAndRenderDocuments(1));
-    document.getElementById("entries")?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    const changeEventListenersId = ["department", "status", "assigned", "overdue", "sort", "entries"]
+
+    changeEventListenersId.forEach((el) => {
+        document.getElementById(el)?.addEventListener("change", () => fetchAndRenderDocuments(1));
+    })
 
     const searchInput = document.getElementById("search");
-    const searchButton = document.getElementById("searchBtn"); // Corrected ID from search-button to searchBtn
+    const searchButton = document.getElementById("searchBtn");
 
     const performSearch = () => fetchAndRenderDocuments(1);
 

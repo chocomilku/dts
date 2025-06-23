@@ -1,5 +1,5 @@
 /** @import { DocumentsResponse, DocumentCountResponse } from "./constants.js" */
-import { API_URL } from "./constants.js";
+import { API_URL, dbDateTransformer, pillBadgeProvider } from "./constants.js";
 import { getDepartmentData, getUserData, badgeColorProvider } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
 
@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // For collapse IDs
     let threadCount = 1;
 
+    const me = await getUserData("@me");
+
     for (const doc of docs.data) {
         // Fetch related data
         const [originDept, author, signatory] = await Promise.all([
@@ -47,15 +49,48 @@ document.addEventListener("DOMContentLoaded", async () => {
             getUserData(doc.signatory)
         ]);
 
+        // badges
+        /**@type {HTMLSpanElement[]} */
+        const badges = [];
+
+        badges.push(pillBadgeProvider(doc.status));
+
         // Assigned to
         let assignedTo = "No one";
+        let isAssignedToMe = false;
+
         if (doc.assignedDepartment != null) {
             const dept = await getDepartmentData(doc.assignedDepartment);
             assignedTo = dept?.name ?? "Unknown";
+
+            if (me.department && me.department.id === doc.assignedDepartment) {
+                isAssignedToMe = true;
+            }
+
         } else if (doc.assignedUser != null) {
             const user = await getUserData(doc.assignedUser);
             assignedTo = user ? `${user.name} (${user.department?.name ?? ""})` : "Unknown";
+
+            if (me.id === doc.assignedUser) {
+                isAssignedToMe = true;
+            }
         }
+
+        if (isAssignedToMe) {
+            badges.push(pillBadgeProvider("assign", "Assigned"));
+        }
+
+        // Overdue
+        const isOverdue = doc.dueAt === null ? false : new Date(doc.dueAt) <= new Date() ? true : false;
+
+        if (isOverdue) {
+            badges.push(pillBadgeProvider("overdue"));
+        }
+
+        // get HTML
+        const badgesHtml = badges.map((b) => {
+            return b.outerHTML
+        })
 
         // Collapse ID
         const collapseId = `thread-collapse-${threadCount++}`;
@@ -69,9 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <div class="thread-top">
                         <h3>
                             <a href="/documents/${doc.trackingNumber}" class="thread-top__text">${doc.trackingNumber}
-                                <span class="badge ${badgeColorProvider(doc.status)} rounded-pill fs-6 ms-2">
-                                    ${doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
-                                </span>
+                                ${badgesHtml.join("")}
                             </a>
                         </h3>
                     </div>
@@ -92,7 +125,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div><b>Created By</b> <span>${author ? `${author.name} (${author.department?.name ?? ""})` : "Unknown"}</span></div>
                 <div><b>Currently Assigned To</b> <span>${assignedTo}</span></div>
                 <div><b>Signatory</b> <span>${signatory ? `${signatory.name} (${signatory.department?.name ?? ""})` : "Unknown"}</span></div>
-                <div><b>Last Updated At</b> <span>${doc.lastUpdatedAt ?? ""}</span></div>
+                <div><b>Created At</b> <span>${doc.createdAt ? dbDateTransformer(doc.createdAt).toLocaleString() : "Unknown"}</span></div>
+                <div><b>Last Updated At</b> <span>${doc.lastUpdatedAt ? dbDateTransformer(doc.lastUpdatedAt).toLocaleString() : "Unknown"}</span></div>
+                <div><b>Due At</b> <span>${doc.dueAt ? dbDateTransformer(doc.dueAt).toLocaleString() : "No Due Date"}</span></div>
             </div>
         `;
         docList.appendChild(threadItem);

@@ -219,6 +219,11 @@ label.required::after {
     gap: 0.5rem;
 }
 
+.thread-top .badge {
+    /* .fs-6 */
+    font-size: 1rem !important;
+}
+
 .thread-top__text {
     color: inherit;
     font-weight: 700;

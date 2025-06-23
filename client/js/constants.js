@@ -1,5 +1,7 @@
-export const API_URL = "";
+/**@import { BadgeType } from "./fetchHelpers.js" */
+import { badgeColorProvider } from "./fetchHelpers.js";
 
+//#region Types
 /**
  * @typedef {"superadmin" | "admin" | "clerk" | "officer"} UserRoles
  */
@@ -19,7 +21,7 @@ export const API_URL = "";
  * @property {number} id
  * @property {string} name
  * @property {number | null} members
- * @property {number | null} createdAt
+ * @property {string | null} createdAt
  * @property {string | null} description
  */
 
@@ -38,6 +40,7 @@ export const API_URL = "";
  * @property {number|null} assignedDepartment
  * @property {string|null} createdAt
  * @property {string|null} lastUpdatedAt
+ * @property {string|null} dueAt
  */
 
 /**
@@ -68,8 +71,9 @@ export const API_URL = "";
  * @property {string} message
  * @property {DocumentLog[]} data
  */
+//#endregion
 
-//#region Responses
+//#region Responses Types
 /**
  * @typedef {object} UsersResponse
  * @property {string} message
@@ -90,10 +94,53 @@ export const API_URL = "";
  * @property {PaginationInfo} pagination
  */
 
+/** 
+ * @typedef {object} DocumentCounters 
+ * @property {number} openCount
+ * @property {number} closedCount
+ * @property {number} assignedCount
+ * @property {number} assignedOverdueCount
+*/
+
 /**
  * @typedef {object} DocumentCountResponse
  * @property {string} message
- * @property {{ openCount: number, closedCount: number, assignedCount: number }} data
+ * @property {DocumentCounters} data
  */
 
+//#endregion
+
+//#region Utility Functions
+export const API_URL = "";
+
+/**
+ * transforms string-based dates into Date object.
+ * @param {string} date date from database that is in UTC without `Z` at the end.
+ * @returns {Date}
+ */
+export function dbDateTransformer(date) {
+    return new Date(`${date}Z`)
+}
+
+/**
+ * Formats the first letter of a string to uppercase
+ * @param {string} str - The string to capitalize
+ * @returns {string} The capitalized string
+ */
+export function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * @param {BadgeType} badge
+ * @param {string} [altText]
+ * @returns {HTMLSpanElement}
+ */
+export const pillBadgeProvider = (badge, altText) => {
+    const badgeElement = window.document.createElement("span");
+    badgeElement.className = `badge ${badgeColorProvider(badge)} rounded-pill ms-2`
+    badgeElement.textContent = altText ?? capitalizeFirst(badge);
+    return badgeElement
+}
 //#endregion

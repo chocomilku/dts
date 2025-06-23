@@ -22,6 +22,11 @@ import {
 	exists,
 	count,
 	ne,
+	between,
+	gt,
+	isNull,
+	isNotNull,
+	lte,
 } from "drizzle-orm";
 import { User, users as usersModel } from "@db/models/users";
 import {
@@ -60,6 +65,18 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 				eq(documentsModel.assignedDepartment, user.departmentId)
 			)
 		);
+		const assignedOverdueCount = await db.$count(
+			documentsModel,
+			and(
+				or(
+					eq(documentsModel.assignedUser, user.id),
+					eq(documentsModel.assignedDepartment, user.departmentId)
+				),
+				isNotNull(documentsModel.dueAt),
+				eq(documentsModel.status, "open"),
+				lte(documentsModel.dueAt, sql`(datetime(CURRENT_TIMESTAMP))`)
+			)
+		);
 
 		c.status(200);
 		return c.json({
@@ -68,6 +85,7 @@ documentRouter.get("/count", sessionAuth("any"), async (c) => {
 				openCount,
 				closedCount,
 				assignedCount,
+				assignedOverdueCount,
 			},
 		});
 	} catch (e) {
@@ -85,6 +103,7 @@ const getAllDocumentsQuerySchema = z.object({
 	department: z.coerce.number().optional().catch(undefined),
 	status: z.enum(["open", "closed"]).optional().catch(undefined),
 	assigned: z.stringbool().optional().catch(undefined),
+	overdue: z.stringbool().optional().catch(undefined),
 	q: z.string().optional().catch(undefined),
 	sort: z
 		.enum(["created-asc", "created-desc", "updated-asc", "updated-desc"])
@@ -131,6 +150,30 @@ documentRouter.get(
 
 				if (assignedFilter) {
 					filters.push(assignedFilter);
+				}
+			}
+
+			if (parsedQuery.overdue != undefined) {
+				let overdueFilter;
+
+				if (parsedQuery.overdue == true) {
+					overdueFilter = and(
+						isNotNull(documentsModel.dueAt),
+						eq(documentsModel.status, "open"),
+						lte(documentsModel.dueAt, sql`(datetime(CURRENT_TIMESTAMP))`)
+					);
+				} else {
+					overdueFilter = and(
+						eq(documentsModel.status, "open"),
+						or(
+							isNull(documentsModel.dueAt),
+							gt(documentsModel.dueAt, sql`(datetime(CURRENT_TIMESTAMP))`)
+						)
+					);
+				}
+
+				if (overdueFilter) {
+					filters.push(overdueFilter);
 				}
 			}
 
@@ -650,7 +693,6 @@ documentRouter.patch(
 					form.status == "closed" ? "closed" : "reopen",
 					author.name
 				),
-				additionalDetails: form.additionalDetails,
 			});
 
 			await db
@@ -684,6 +726,23 @@ documentRouter.post(
 			const author = c.get("user");
 			const form = c.req.valid("form");
 
+			// due date checks
+			if (form.dueAt) {
+				const date = new Date(form.dueAt);
+				if (isNaN(date.valueOf())) {
+					c.status(400);
+					return c.json({ message: "Invalid Due Date." });
+				}
+
+				const isAlreadyOverdue = date <= new Date();
+				if (isAlreadyOverdue) {
+					c.status(400);
+					return c.json({ message: "Due date cannot be set in the past." });
+				}
+			}
+
+			const dueDate = !form.dueAt ? null : sql`(datetime(${form.dueAt}))`;
+
 			const insertedDoc = await db
 				.insert(documentsModel)
 				.values({
@@ -697,6 +756,7 @@ documentRouter.post(
 					originDepartment: author.departmentId,
 					assignedUser: author.id,
 					assignedDepartment: null,
+					dueAt: dueDate,
 				})
 				.returning({
 					id: documentsModel.id,
