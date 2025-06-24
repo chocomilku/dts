@@ -91,6 +91,8 @@ This project is licensed under MIT License.
 
 - department / staff pages show no results
 
+- ~~remove avatar~~
+
 - **feedback form**
 
 ```
