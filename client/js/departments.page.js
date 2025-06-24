@@ -14,8 +14,10 @@ const loadDepartments = async () => {
         const departments = await res.json();
 
         // Select the container for thread items
-        const mainContent = document.querySelector(".main-content");
-        if (!mainContent) return;
+        const deptList = document.getElementById("deptList");
+        if (!deptList) return;
+
+        deptList.innerHTML = "";
 
         let deptCollapseCount = 1;
 
@@ -51,7 +53,7 @@ const loadDepartments = async () => {
                     <div><b>Created At</b> <span>${dept.createdAt ? dbDateTransformer(dept.createdAt).toLocaleString() : "Unknown"}</span></div>
                 </div>
             `;
-            mainContent.appendChild(threadItem);
+            deptList.appendChild(threadItem);
         });
 
     } catch (e) {

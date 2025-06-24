@@ -118,7 +118,7 @@ async function loadStaff() {
         }
 
         // Remove any existing thread items
-        staffList.querySelectorAll(".thread-item").forEach(el => el.remove());
+        staffList.innerHTML = ""
 
         // Create and append a thread-item for each staff member
         if (Array.isArray(users.data) && users.data.length > 0) {

@@ -291,7 +291,7 @@ const fetchAndRenderDocuments = async (pageNumber = 1) => {
     } catch (e) {
         console.error("Failed to fetch documents:", e);
         docList.innerHTML = `
-    < h2 > <b>Documents</b></h2 >
+        <h2><b>Documents</b></h2>
         <div class="alert alert-danger">Error loading documents. Please try again.</div>
 `;
         renderPaginationControls(null); // Clear/hide pagination on error

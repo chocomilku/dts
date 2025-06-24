@@ -83,7 +83,7 @@
                 <h1 class="text-center mb-4"><b>Staff Members</b></h1>
 
                 <div class="main-content">
-                    <div id="staffList" class="d-flex flex-column gap-2">
+                    <div>
                         <div class=" d-flex flex-row gap-2 align-items-center">
                             <h2><b id="staffDept">Staff Members</b></h2>
                             <button class="btn btn-sm btn-primary material-symbols-outlined" data-bs-toggle="modal"
@@ -92,7 +92,11 @@
                             </button>
                         </div>
                     </div>
-
+                    <div id="staffList" class="d-flex flex-column gap-2">
+                        <span class="spinner-border text-dark" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </span>
+                    </div>
                 </div>
 
             </main>

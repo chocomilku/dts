@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!docList) return;
 
     // Remove any existing thread items
-    docList.querySelectorAll(".thread-item").forEach(el => el.remove());
+    docList.innerHTML = "";
 
     // Fetch documents
     const res = await fetch(`${API_URL}/api/documents?assigned=true`, { credentials: "include" });

@@ -57,7 +57,7 @@ function renderDepartmentDetails(department) {
         deptTitle.textContent = department.name;
     }
     if (deptDescription) {
-        deptDescription.textContent = department.description || "";
+        deptDescription.innerHTML = !department.description ? "<i>No department description.</i>" : department.description
     }
 }
 
@@ -104,6 +104,14 @@ function renderStaff(members) {
     const staffRoles = document.getElementById("staffRoles");
     if (!staffRoles) return;
 
+    // Clear existing content
+    staffRoles.innerHTML = "";
+
+    if (members.length < 1) {
+        staffRoles.innerHTML = `<div class="alert alert-info mt-3">No staff members yet in this department. </div>`;
+        return;
+    }
+
     // Group members by role
     const roles = members.reduce((acc, user) => {
         const role = user.role || "Unassigned";
@@ -113,9 +121,6 @@ function renderStaff(members) {
         acc[role].push(user);
         return acc;
     }, {});
-
-    // Clear existing content
-    staffRoles.innerHTML = "";
 
     // Define the order of roles
     const roleOrder = ["superadmin", "admin", "officer", "clerk", "Unassigned"];
