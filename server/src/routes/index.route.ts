@@ -1,11 +1,19 @@
 import { Hono } from "hono";
-import { eq, getTableColumns } from "drizzle-orm";
+import { eq, and, getTableColumns } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "@db/conn";
-import { users as usersModel, zLogin } from "@db/models/users";
+import { users as usersModel, zForgotPassword, zLogin } from "@db/models/users";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createSession, destroySession } from "@utils/sessionProvider";
 import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
+import {
+	createToken,
+	destroyToken,
+	getToken,
+} from "@utils/passwordTokenProvider";
+import { noReplyMail } from "@mail/noReply.mail";
+import { z } from "zod/v4";
+import { emptyString } from "@utils/emptyString";
 
 type Variables = {} & SessionAuthVariables;
 
@@ -24,6 +32,118 @@ indexRouter.get("/check", sessionAuth("any"), async (c) => {
 	c.status(200);
 	return c.json({ message: "Authenticated", userId: user.id });
 });
+//#endregion
+
+//#region Forgot Password - POST
+/**
+ * Forgot Password endpoint for requesting to reset their own password
+ * if username and/or email are incorrect/not found, no reset token will be sent.
+ */
+indexRouter.post(
+	"/forgot-password",
+	zValidator("form", zForgotPassword, (result, c) => {
+		if (!result.success) {
+			c.status(400);
+			return c.json({
+				message: "Invalid Request Body",
+			});
+		}
+	}),
+	async (c) => {
+		const form = c.req.valid("form");
+
+		const { id, username, name, email } = getTableColumns(usersModel);
+
+		const queryUser = await db
+			.select({ id, username, email, name })
+			.from(usersModel)
+			.where(
+				and(
+					eq(usersModel.username, form.username),
+					eq(usersModel.email, form.email)
+				)
+			);
+
+		if (queryUser.length == 1) {
+			const user = queryUser[0];
+			const resetToken = await createToken(user.id);
+			await noReplyMail(
+				"reset-password",
+				`${user.name} <${user.email}>`,
+				`${process.env.BASE_URL}/reset-password?token=${resetToken}`
+			);
+		}
+
+		c.status(202);
+		return c.json({ message: "Reset Password request has been received." });
+	}
+);
+
+//#endregion
+
+//#region Reset password check - POST
+const getResetSchema = z.object({
+	token: z.string(),
+});
+indexRouter.post(
+	"/reset-check",
+	zValidator("form", getResetSchema, (result, c) => {
+		if (!result.success) {
+			c.status(400);
+			return c.json({ message: "Invalid Request." });
+		}
+	}),
+	async (c) => {
+		const { token } = c.req.valid("form");
+
+		const tokenCheck = await getToken(token);
+		if (!tokenCheck) {
+			c.status(401);
+			return c.json({ message: "Unauthorized." });
+		} else {
+			c.status(200);
+			return c.json({ message: "Valid" });
+		}
+	}
+);
+//#endregion
+
+//#region Reset password - POST
+const postResetSchema = z.object({
+	token: z.preprocess(emptyString, z.string()),
+	newPassword: z.preprocess(emptyString, z.string()),
+});
+indexRouter.post(
+	"/reset-password",
+	zValidator("form", postResetSchema, (result, c) => {
+		if (!result.success) {
+			c.status(400);
+			return c.json({ message: "Invalid Request." });
+		}
+	}),
+	async (c) => {
+		const { token, newPassword } = c.req.valid("form");
+
+		const tokenUserId = await getToken(token);
+		if (!tokenUserId) {
+			c.status(401);
+			return c.json({ message: "Unauthorized." });
+		}
+
+		const newPasswordHash = await Bun.password.hash(newPassword);
+
+		await db
+			.update(usersModel)
+			.set({ password: newPasswordHash })
+			.where(eq(usersModel.id, tokenUserId));
+
+		await destroyToken(token);
+
+		c.status(204);
+		return c.json({});
+	}
+);
+
 //#endregion
 
 //#region Login - POST

@@ -81,7 +81,7 @@ This project is licensed under MIT License.
 
 - ~~**overdue badge**~~
 
-- ~~ new document page toggle no due date~~
+- ~~new document page toggle no due date~~
 
 - ~~dashboard overdue count~~
 
@@ -101,9 +101,8 @@ This project is licensed under MIT License.
 
 - flatten zod errors -> move to message property
 
-- **forgot password** \
-  nodemailer \
-  forgot password -> ~~put email~~ -> link to reset password (TTL 10min, redis)
+- ~~**forgot password**~~ \
+  ~~nodemailer~~ ~~forgot password~~ -> ~~put email~~ -> ~~link to reset password (TTL 10min, redis)~~
 
 - **notif system** \
   websocket \

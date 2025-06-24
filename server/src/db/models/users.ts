@@ -33,3 +33,8 @@ export const zLogin = z.object({
 	username: z.preprocess(emptyString, z.string()),
 	password: z.preprocess(emptyString, z.string()),
 });
+
+export const zForgotPassword = z.object({
+	username: z.preprocess(emptyString, z.string()),
+	email: z.preprocess(emptyString, z.email()),
+});
