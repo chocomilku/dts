@@ -97,9 +97,11 @@ This project is licensed under MIT License.
 
 - deprecate staff members -> redirect to departments instead
 
-- move add staff logic to departments
+- ~~move add staff logic to departments~~
 
-- add staff email
+- ~~add staff email~~
+
+- fixed dashboard counter wrong values
 
 - flatten zod errors -> move to message property
 
