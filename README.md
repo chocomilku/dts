@@ -101,9 +101,8 @@ This project is licensed under MIT License.
 
 - flatten zod errors -> move to message property
 
-- **forgot password** \
-  nodemailer \
-  forgot password -> ~~put email~~ -> link to reset password (TTL 10min, redis)
+- ~~**forgot password**~~ \
+  ~~nodemailer~~ ~~forgot password~~ -> ~~put email~~ -> ~~link to reset password (TTL 10min, redis)~~
 
 - **notif system** \
   websocket \
