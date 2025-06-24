@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile | Document Tracking System</title>
+    <title>Feedback | Document Tracking System</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.page.css">
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/sidenavbar.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
-    <script defer type="module" src="/js/profile.page.js"></script>
+    <script defer type="module" src="/js/feedback.page.js"></script>
 </head>
 
 <body>
@@ -94,59 +95,25 @@
                         class="btn btn-outline-warning">&#xe51c</button></span>
             </nav>
             <main class="container-lg">
-                <h1 class="text-center"><b>Profile</b></h1>
-                <p class="text-primary">This page allows you to change some of your personal information. 'Role' can
-                    only be updated by your department admin or organization's superadmin. 'Department' can only be
-                    updated by the organization's superadmin.</p>
+                <h1 class="text-center"><b>Feedback</b></h1>
                 <div class="main-content">
-                    <h2><b>Profile Information</b></h2>
-                    <div id="alert-placeholder"></div>
-                    <form class="d-flex flex-column gap-2" id="update-form" novalidate>
+                    <h4><b>
+                            We would love to hear your thoughts, suggestions, concerns, or problems with anything so we
+                            can
+                            improve the Document Tracking System!
+                        </b></h4>
+                    <form class="d-flex flex-column gap-2" id="feedbackForm">
                         <div>
-                            <label for="userId" class="form-label"><b>User ID</b></label>
-                            <input type="text" name="userId" id="userId" class="form-control" disabled>
+                            <label for="details" class="form-label">Describe your feedback</label>
+                            <textarea name="feedback" id="details" class="form-control" rows="5"
+                                placeholder="Your feedback helps us improve the system"></textarea>
+                            <div class="form-text">Maximum 1000 characters</div>
                         </div>
-
-                        <div>
-                            <label for="name" class="form-label"><b>Name</b></label>
-                            <input type="text" name="name" id="name" class="form-control">
-                        </div>
-
-                        <div>
-                            <label for="role" class="form-label"><b>Role</b></label>
-                            <select name="role" id="role" class="form-select">
-                                <option value="superadmin">superadmin</option>
-                                <option value="admin">admin</option>
-                                <option value="clerk">clerk</option>
-                                <option value="officer">officer</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="department" class="form-label"><b>Department</b></label>
-                            <select name="department" id="department" class="form-select"></select>
-                        </div>
-
-                        <div>
-                            <label for="email" class="form-label"><b>Email</b></label>
-                            <input type="email" name="email" id="email" class="form-control">
-                        </div>
-
-                        <div>
-                            <label for="username" class="form-label"><b>Username</b></label>
-                            <input type="text" name="username" id="username" class="form-control" disabled>
-                        </div>
-
-                        <div>
-                            <label for="password" class="form-label"><b>Password</b></label>
-                            <input type="password" name="password" id="password" class="form-control">
-                        </div>
-
-                        <button type="submit" class="btn btn-warning" id="form-submit">Save</button>
+                        <button type="submit" class="btn btn-primary" id="form-submit">Submit</button>
                     </form>
                 </div>
+            </main>
         </div>
-        </main>
     </div>
 </body>
 
