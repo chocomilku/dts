@@ -25,7 +25,12 @@ services:
     ports:
       - "54321:54321"
     environment:
-      - REDIS_CONN=redis://redis:6379
+      - REDIS_CONN=${REDIS_CONN:-redis://redis:6379}
+      - BASE_URL=${BASE_URL:-http://localhost}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
     depends_on:
       - redis
     networks:
@@ -43,7 +48,12 @@ services:
     ports:
       - "54321:54321"
     environment:
-      - REDIS_CONN=redis://redis:6379
+      - REDIS_CONN=${REDIS_CONN:-redis://redis:6379}
+      - BASE_URL=${BASE_URL:-http://localhost}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
     depends_on:
       - redis
     networks:

@@ -17,6 +17,7 @@
 		"zod": "^3.25.32"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.2.14"
+		"@types/bun": "^1.2.14",
+		"@types/nodemailer": "^6.4.17"
 	}
 }
