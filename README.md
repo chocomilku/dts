@@ -123,7 +123,7 @@ lastUpdatedAt: timestamp
 status: null | "approved" | "denied" | "amend"
 ```
 
-- **feedback form**
+- ~~**feedback form**~~
 
 ```
 author: authorId
@@ -131,4 +131,4 @@ timestamp: timestamp
 feedback: string
 ```
 
-- **feedback list (superadmin)**
+- ~~**feedback list (superadmin)**~~

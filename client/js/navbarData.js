@@ -6,6 +6,7 @@ const loadUserData = async () => {
         const nameElem = document.getElementsByClassName('profile__name')
         const deptElem = document.getElementsByClassName('profile__dept')
         const staffNav = document.getElementById('staffNav');
+        const feedbacksNav = document.querySelector('.navigation__item[href="/feedbacks"]');
 
         if (nameElem) {
             for (let i = 0; i < nameElem.length; i++) {
@@ -24,6 +25,14 @@ const loadUserData = async () => {
                 }
 
                 deptElem[i].textContent = content;
+            }
+        }
+
+        // Show/hide feedback list link based on user role
+        if (feedbacksNav) {
+            const isAdmin = user.role === "admin" || user.role === "superadmin";
+            if (feedbacksNav instanceof HTMLElement) {
+                feedbacksNav.style.display = isAdmin ? "flex" : "none";
             }
         }
 
