@@ -1,6 +1,7 @@
 # Document Tracking System
 
 A fullstack web application inspired by the University's Internal Document Tracking System and JIRA, an issue tracking software.
+**FINAL Project for COMP 016 WEB DEVELOPMENT **
 
 ## Technologies Used
 
