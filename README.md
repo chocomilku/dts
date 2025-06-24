@@ -95,13 +95,13 @@ This project is licensed under MIT License.
 
 - ~~remove avatar~~
 
-- deprecate staff members -> redirect to departments instead
+- ~~deprecate staff members -> redirect to departments instead~~
 
 - ~~move add staff logic to departments~~
 
 - ~~add staff email~~
 
-- fixed dashboard counter wrong values
+- ~~fixed dashboard counter wrong values~~
 
 - flatten zod errors -> move to message property
 

@@ -12,14 +12,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         const countData = await res.json();
 
         const openCountElem = document.getElementById("openCount");
-        const closedCountElem = document.getElementById("closedCount");
         const assignedCountElem = document.getElementById("assignedCount");
         const assignedOverdueElem = document.getElementById("assignedOverdueCount");
+        const closedCountElem = document.getElementById("closedCount");
 
         if (openCountElem) openCountElem.textContent = String(countData.data.openCount);
-        if (closedCountElem) closedCountElem.textContent = String(countData.data.assignedCount);
-        if (assignedCountElem) assignedCountElem.textContent = String(countData.data.closedCount);
+        if (assignedCountElem) assignedCountElem.textContent = String(countData.data.assignedCount);
         if (assignedOverdueElem) assignedOverdueElem.textContent = String(countData.data.assignedOverdueCount)
+        if (closedCountElem) closedCountElem.textContent = String(countData.data.closedCount);
     } catch (e) {
         // Optionally handle error
         console.error("Failed to fetch document counts", e);
