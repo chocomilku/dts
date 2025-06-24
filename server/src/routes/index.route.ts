@@ -6,9 +6,14 @@ import { users as usersModel, zForgotPassword, zLogin } from "@db/models/users";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createSession, destroySession } from "@utils/sessionProvider";
 import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
-import { createToken, getToken } from "@utils/passwordTokenProvider";
+import {
+	createToken,
+	destroyToken,
+	getToken,
+} from "@utils/passwordTokenProvider";
 import { noReplyMail } from "@mail/noReply.mail";
 import { z } from "zod/v4";
+import { emptyString } from "@utils/emptyString";
 
 type Variables = {} & SessionAuthVariables;
 
@@ -104,6 +109,40 @@ indexRouter.post(
 //#endregion
 
 //#region Reset password - POST
+const postResetSchema = z.object({
+	token: z.preprocess(emptyString, z.string()),
+	newPassword: z.preprocess(emptyString, z.string()),
+});
+indexRouter.post(
+	"/reset-password",
+	zValidator("form", postResetSchema, (result, c) => {
+		if (!result.success) {
+			c.status(400);
+			return c.json({ message: "Invalid Request." });
+		}
+	}),
+	async (c) => {
+		const { token, newPassword } = c.req.valid("form");
+
+		const tokenUserId = await getToken(token);
+		if (!tokenUserId) {
+			c.status(401);
+			return c.json({ message: "Unauthorized." });
+		}
+
+		const newPasswordHash = await Bun.password.hash(newPassword);
+
+		await db
+			.update(usersModel)
+			.set({ password: newPasswordHash })
+			.where(eq(usersModel.id, tokenUserId));
+
+		await destroyToken(token);
+
+		c.status(204);
+		return c.json({});
+	}
+);
 
 //#endregion
 
