@@ -1,11 +1,12 @@
 import { Hono } from "hono";
-import { eq, getTableColumns } from "drizzle-orm";
+import { eq, and, getTableColumns } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { db } from "@db/conn";
-import { users as usersModel, zLogin } from "@db/models/users";
+import { users as usersModel, zForgotPassword, zLogin } from "@db/models/users";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createSession, destroySession } from "@utils/sessionProvider";
 import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
+import { createToken } from "@utils/passwordTokenProvider";
 
 type Variables = {} & SessionAuthVariables;
 
@@ -24,6 +25,51 @@ indexRouter.get("/check", sessionAuth("any"), async (c) => {
 	c.status(200);
 	return c.json({ message: "Authenticated", userId: user.id });
 });
+//#endregion
+
+//#region Forgot Password - POST
+
+/**
+ * Forgot Password endpoint for requesting to reset their own password
+ * if username and/or email are incorrect/not found, no reset token will be sent.
+ */
+indexRouter.post(
+	"/forgot-password",
+	zValidator("form", zForgotPassword, (result, c) => {
+		if (!result.success) {
+			c.status(400);
+			return c.json({
+				message: "Invalid Request Body",
+			});
+		}
+	}),
+	async (c) => {
+		const form = c.req.valid("form");
+
+		const { id, username, email } = getTableColumns(usersModel);
+
+		const queryUser = await db
+			.select({ id, username, email })
+			.from(usersModel)
+			.where(
+				and(
+					eq(usersModel.username, form.username),
+					eq(usersModel.email, form.email)
+				)
+			);
+
+		if (queryUser.length == 1) {
+			const resetToken = await createToken(queryUser[0].id);
+			// TODO: implement mail function here
+
+			console.log(`Reset token for: ${queryUser[0].username}: ${resetToken}`);
+		}
+
+		c.status(202);
+		return c.json({ message: "Reset Password request has been received." });
+	}
+);
+
 //#endregion
 
 //#region Login - POST
