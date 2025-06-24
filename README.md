@@ -22,6 +22,7 @@ A fullstack web application inspired by the University's Internal Document Track
 - Drizzle ORM
 - SQLite (Main Database)
 - Redis (Session Auth Database)
+- Nodemailer (SMTP Transporter)
 
 ### Development Environment
 
@@ -29,6 +30,7 @@ A fullstack web application inspired by the University's Internal Document Track
 - VSCode
 - Dev Containers
 - Live Server VSCode and Browser Extension
+- Ethereal.email (Fake SMTP service for testing/dev)
 
 ### Production Environment
 
