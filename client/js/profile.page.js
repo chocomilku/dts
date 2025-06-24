@@ -18,6 +18,7 @@ const loadUserData = async () => {
         const roleElem = document.getElementById('role') //HTMLSelectElement
         const deptElem = document.getElementById('department')
         const userElem = document.getElementById('username')
+        const emailElem = document.getElementById('email')
 
 
         if (!deptElem) return;
@@ -32,7 +33,7 @@ const loadUserData = async () => {
         })
 
 
-        const autoFields = [{ key: "name", element: nameElem }, { key: "role", element: roleElem }, { key: "username", element: userElem }, { key: "id", element: idElem }]
+        const autoFields = [{ key: "name", element: nameElem }, { key: "role", element: roleElem }, { key: "username", element: userElem }, { key: "id", element: idElem }, { key: "email", element: emailElem }]
 
         autoFields.forEach((el) => {
             const e = el.element
@@ -94,12 +95,14 @@ const profileFormHandling = async () => {
             /** @type {HTMLInputElement} */
             const deptValue = formElem.elements["department"]
             /** @type {HTMLInputElement} */
+            const emailValue = formElem.elements["email"]
+            /** @type {HTMLInputElement} */
             const userValue = formElem.elements["username"]
             /** @type {HTMLInputElement} */
             const passValue = formElem.elements["password"]
 
             const reqBody = new URLSearchParams();
-            const elements = [nameValue, roleValue, deptValue, userValue, passValue];
+            const elements = [nameValue, roleValue, deptValue, emailValue, userValue, passValue];
             for (const el of elements) {
                 if ((!el.disabled) && (el.name) && (el.value !== "")) {
                     reqBody.append(el.name, el.value)
@@ -118,7 +121,7 @@ const profileFormHandling = async () => {
             if (!res.ok) {
                 btn.disabled = false;
                 btn.innerHTML = `Save`
-                if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">An error occurred.</div>`;
+                if (alertPlaceholder) alertPlaceholder.innerHTML = `<div class="alert alert-danger" role="alert">${await res.json() ?? "An error occurred."}</div>`;
                 console.error(await res.json());
             } else {
                 btn.disabled = true;

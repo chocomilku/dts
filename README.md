@@ -93,15 +93,21 @@ This project is licensed under MIT License.
 
 - ~~remove avatar~~
 
-- **feedback form**
+- deprecate staff members -> redirect to departments instead
 
-```
-author: authorId
-timestamp: timestamp
-feedback: string
-```
+- move add staff logic to departments
 
-- **feedback list (superadmin)**
+- add staff email
+
+- flatten zod errors -> move to message property
+
+- **forgot password** \
+  nodemailer \
+  forgot password -> ~~put email~~ -> link to reset password (TTL 10min, redis)
+
+- **notif system** \
+  websocket \
+  email notifs
 
 - **multiple signatories** \
   breaking change: remove signatory from document \
@@ -114,10 +120,12 @@ lastUpdatedAt: timestamp
 status: null | "approved" | "denied" | "amend"
 ```
 
-- **forgot password** \
-  nodemailer \
-  forgot password -> put email -> link to reset password (TTL 10min, redis)
+- **feedback form**
 
-- **notif system** \
-  websocket \
-  email notifs
+```
+author: authorId
+timestamp: timestamp
+feedback: string
+```
+
+- **feedback list (superadmin)**
