@@ -16,7 +16,8 @@
         "postman.postman-for-vscode",
         "esbenp.prettier-vscode",
         "qwtel.sqlite-viewer",
-        "redis.redis-for-vscode"
+        "redis.redis-for-vscode",
+        "ritwickdey.liveserver"
       ]
     }
   },

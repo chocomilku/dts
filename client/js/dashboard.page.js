@@ -14,10 +14,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         const openCountElem = document.getElementById("openCount");
         const closedCountElem = document.getElementById("closedCount");
         const assignedCountElem = document.getElementById("assignedCount");
+        const assignedOverdueElem = document.getElementById("assignedOverdueCount");
 
         if (openCountElem) openCountElem.textContent = String(countData.data.openCount);
         if (closedCountElem) closedCountElem.textContent = String(countData.data.assignedCount);
         if (assignedCountElem) assignedCountElem.textContent = String(countData.data.closedCount);
+        if (assignedOverdueElem) assignedOverdueElem.textContent = String(countData.data.assignedOverdueCount)
     } catch (e) {
         // Optionally handle error
         console.error("Failed to fetch document counts", e);
