@@ -182,7 +182,7 @@ userRouter.post(
 			if (validated.departmentId != user.departmentId) {
 				c.status(403);
 				return c.json({
-					message: "Admins can only edit users in their department.",
+					message: "Admins can only create users in their department.",
 				});
 			}
 		}
