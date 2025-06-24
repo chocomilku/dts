@@ -36,16 +36,17 @@ userRouter.get("/", sessionAuth("any"), async (c) => {
 			return c.json(parsedData.error);
 		}
 
-		const isAllowedToSeeUsername =
+		const hasSensitiveInfoPerm =
 			user.role == "superadmin" ||
 			(user.role == "admin" && user.departmentId == parsedData.data.department);
 
-		const { password, username, departmentId, ...usersRest } =
+		const { password, username, email, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
-		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
+		const { createdAt, description, ...deptRest } =
+			getTableColumns(departmentsModel);
 
-		const selectFields = isAllowedToSeeUsername
-			? { ...usersRest, username, department: deptRest }
+		const selectFields = hasSensitiveInfoPerm
+			? { ...usersRest, username, email, department: deptRest }
 			: { ...usersRest, department: deptRest };
 
 		const data = await db
@@ -108,6 +109,8 @@ userRouter.get("/@me", sessionAuth("any"), async (c) => {
 userRouter.get("/:id", sessionAuth("any"), async (c) => {
 	try {
 		const { id } = c.req.param();
+		const user = c.get("user");
+
 		const querySchema = z.object({
 			id: z.coerce.number().int().positive(),
 		});
@@ -123,11 +126,12 @@ userRouter.get("/:id", sessionAuth("any"), async (c) => {
 
 		const safeId = parsedData.data.id;
 
-		const { password, username, departmentId, ...usersRest } =
+		const { password, departmentId, ...usersRest } =
 			getTableColumns(usersModel);
-		const { createdAt, ...deptRest } = getTableColumns(departmentsModel);
+		const { createdAt, description, ...deptRest } =
+			getTableColumns(departmentsModel);
 
-		const data = await db
+		const queriedUser = await db
 			.select({ ...usersRest, department: deptRest })
 			.from(usersModel)
 			.leftJoin(
@@ -137,13 +141,26 @@ userRouter.get("/:id", sessionAuth("any"), async (c) => {
 			.limit(1)
 			.where(eq(usersModel.id, safeId));
 
-		if (data.length != 1) {
+		if (queriedUser.length != 1) {
 			c.status(404);
 			return c.json({ message: "User not found." });
 		}
 
+		let data = queriedUser[0];
+
+		const hasSensitiveInfoPerm =
+			user.role == "superadmin" ||
+			(user.role == "admin" &&
+				user.departmentId == queriedUser[0].department?.id);
+
+		if (!hasSensitiveInfoPerm) {
+			const { email, username, ...qRest } = queriedUser[0];
+			//@ts-ignore - username can be null client-side
+			data = { ...qRest, username: null, email: null };
+		}
+
 		c.status(200);
-		return c.json({ message: "OK", data });
+		return c.json({ message: "OK", data: [data] });
 	} catch (e) {
 		console.error(e);
 		c.status(500);
