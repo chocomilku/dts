@@ -6,8 +6,9 @@ import { users as usersModel, zForgotPassword, zLogin } from "@db/models/users";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createSession, destroySession } from "@utils/sessionProvider";
 import { sessionAuth, SessionAuthVariables } from "@middlewares/sessionAuth";
-import { createToken } from "@utils/passwordTokenProvider";
+import { createToken, getToken } from "@utils/passwordTokenProvider";
 import { noReplyMail } from "@mail/noReply.mail";
+import { z } from "zod/v4";
 
 type Variables = {} & SessionAuthVariables;
 
@@ -72,6 +73,37 @@ indexRouter.post(
 		return c.json({ message: "Reset Password request has been received." });
 	}
 );
+
+//#endregion
+
+//#region Reset password check - POST
+const getResetSchema = z.object({
+	token: z.string(),
+});
+indexRouter.post(
+	"/reset-check",
+	zValidator("form", getResetSchema, (result, c) => {
+		if (!result.success) {
+			c.status(400);
+			return c.json({ message: "Invalid Request." });
+		}
+	}),
+	async (c) => {
+		const { token } = c.req.valid("form");
+
+		const tokenCheck = await getToken(token);
+		if (!tokenCheck) {
+			c.status(401);
+			return c.json({ message: "Unauthorized." });
+		} else {
+			c.status(200);
+			return c.json({ message: "Valid" });
+		}
+	}
+);
+//#endregion
+
+//#region Reset password - POST
 
 //#endregion
 
