@@ -7,11 +7,9 @@
     <title>Dashboard | Document Tracking System</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/dashboard.page.css">
     <script defer src="/js/bootstrap.bundle.min.js"></script>
     <script defer src="/js/sidenavbar.js"></script>
     <script defer type="module" src="/js/navbarData.js"></script>
-    <script defer type="module" src="/js/dashboard.page.js"></script>
 </head>
 
 <body>
@@ -85,41 +83,9 @@
                         class="btn btn-outline-warning">&#xe51c</button></span>
             </nav>
             <main class="container-lg">
-                <h1><b>Welcome to Document Tracking System, <span class="profile__name">&nbsp;</span>!</b></h1>
-                <div class="counters">
-                    <div class="counter">
-                        <h1 class="display-2 fw-semibold" id="openCount">0</h1>
-                        <b>
-                            <h5>Open</h5>
-                        </b>
-                    </div>
-                    <div class="counter">
-                        <h1 class="display-2 fw-semibold" id="assignedCount">0</h1>
-                        <b>
-                            <h5>Assigned to me</h5>
-                        </b>
-                    </div>
-                    <div class="counter">
-                        <h1 class="display-2 fw-semibold" id="assignedOverdueCount">0</h1>
-                        <b>
-                            <h5>Assigned Overdue</h5>
-                        </b>
-                    </div>
-                    <div class="counter">
-                        <h1 class="display-2 fw-semibold" id="closedCount">0</h1>
-                        <b>
-                            <h5>Closed</h5>
-                        </b>
-                    </div>
-                </div>
-
+                <h1 class="text-center"><b>User Guide</b></h1>
                 <div class="main-content">
-                    <h2><b>Assigned Documents</b> <span class="fs-6">(Last updated on top)</span></h2>
-                    <div id="docList" class="d-flex flex-column gap-2">
-                        <span class="spinner-border text-dark" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </span>
-                    </div>
+                    <iframe src="/static/guide.pdf" height="500"></iframe>
                 </div>
             </main>
         </div>
