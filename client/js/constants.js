@@ -12,6 +12,7 @@ import { badgeColorProvider } from "./fetchHelpers.js";
  * @property {number} id
  * @property {UserRoles} role
  * @property {string} name
+ * @property {string|null} email
  * @property {string | null} username
  * @property {string | null} createdAt
  */

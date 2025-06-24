@@ -165,6 +165,7 @@ userRouter.post("/", zValidator("form", zUsers), async (c) => {
 				role: validated.role,
 				name: validated.name,
 				departmentId: validated.departmentId,
+				email: validated.email,
 				username: await usernameProvider(),
 				password: passwordHash,
 			})
@@ -180,6 +181,13 @@ userRouter.post("/", zValidator("form", zUsers), async (c) => {
 			console.error(e);
 			c.status(500);
 			return c.json({ message: "Internal Server Error" });
+		}
+
+		// SQLITE_CONSTRAINT_UNIQUE
+		// best to use switch case here if it gottten big
+		if (e.errno == 2067) {
+			c.status(409);
+			return c.json({ message: "Email already exist." });
 		}
 	}
 });
@@ -211,7 +219,7 @@ userRouter.put(
 		}
 
 		try {
-			const { role, departmentId } = getTableColumns(usersModel);
+			const { departmentId } = getTableColumns(usersModel);
 
 			// fetch target user
 			const targetUserData = await db
@@ -260,6 +268,7 @@ userRouter.put(
 				.set({
 					role: validatedForm?.role,
 					name: validatedForm?.name,
+					email: validatedForm?.email,
 					departmentId: validatedForm?.departmentId,
 					password: newPasswordHash,
 				})
@@ -268,9 +277,18 @@ userRouter.put(
 			c.status(204);
 			return c.json({});
 		} catch (e) {
-			console.error(e);
-			c.status(500);
-			return c.json({ message: "Internal Server Error" });
+			if (!(e instanceof SQLiteError)) {
+				console.error(e);
+				c.status(500);
+				return c.json({ message: "Internal Server Error" });
+			}
+
+			// SQLITE_CONSTRAINT_UNIQUE
+			// best to use switch case here if it gottten big
+			if (e.errno == 2067) {
+				c.status(409);
+				return c.json({ message: "Email already exist." });
+			}
 		}
 	}
 );
