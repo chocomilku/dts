@@ -283,16 +283,17 @@ function handleNewUserForm() {
     const nameField = getElement("user-name", HTMLInputElement);
     const roleField = getElement("user-role", HTMLSelectElement);
     const deptField = getElement("user-department", HTMLSelectElement);
+    const emailField = getElement("user-email", HTMLInputElement);
     const passwordField = getElement("user-password", HTMLInputElement);
     const submitBtn = getElement("user-form-submit", HTMLButtonElement);
 
     // Check if all required form elements are present
-    if (!nameField || !roleField || !deptField || !passwordField || !submitBtn) {
+    if (!nameField || !roleField || !deptField || !emailField || !passwordField || !submitBtn) {
         console.error("Form fields not found");
         return;
     }
 
-    const formFields = [nameField, roleField, deptField, passwordField];
+    const formFields = [nameField, roleField, deptField, emailField, passwordField];
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -312,6 +313,7 @@ function handleNewUserForm() {
                 name: nameField.value,
                 role: roleField.value,
                 departmentId: deptField.value,
+                email: emailField.value,
                 password: passwordField.value
             });
 
