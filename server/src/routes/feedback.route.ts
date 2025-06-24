@@ -4,7 +4,7 @@ import { SessionAuthVariables, sessionAuth } from "@middlewares/sessionAuth";
 import { zFeedback, feedbacks as feedbacksModel } from "@db/models/feedbacks";
 import { db } from "@db/conn";
 import { z } from "zod";
-import { desc, eq, getTableColumns, sql } from "drizzle-orm";
+import { asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { users as usersModel } from "@db/models/users";
 import { departments as departmentsModel } from "@db/models/departments";
 
@@ -39,11 +39,27 @@ feedbacksRouter.get("/", sessionAuth(["superadmin", "admin"]), async (c) => {
 		const { createdAt, email, password, ...usersRest } =
 			getTableColumns(usersModel);
 
+		// sort
+		let orderBy;
+
+		switch (parsedData.data.sort) {
+			case "oldest":
+				orderBy = asc(feedbacksModel.timestamp);
+				break;
+			case "newest":
+			default:
+				orderBy = desc(feedbacksModel.timestamp);
+				break;
+		}
+
 		// Get data with join
 		const data = await db
 			.select({ ...feedbackRest, author: usersRest })
 			.from(feedbacksModel)
-			.leftJoin(usersModel, eq(feedbacksModel.author, usersModel.id));
+			.leftJoin(usersModel, eq(feedbacksModel.author, usersModel.id))
+			.limit(parsedData.data.limit)
+			.offset(parsedData.data.offset)
+			.orderBy(orderBy);
 
 		const count = await db.$count(feedbacksModel);
 
