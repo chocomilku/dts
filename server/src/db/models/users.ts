@@ -12,6 +12,7 @@ export const users = sqliteTable("users", {
 		.references(() => departments.id)
 		.notNull(),
 	username: text().notNull().unique(),
+	email: text().unique(),
 	password: text().notNull(),
 	createdAt: text()
 		.default(sql`(CURRENT_TIMESTAMP)`)
@@ -28,6 +29,6 @@ export const zUsers = z.object({
 });
 
 export const zLogin = z.object({
-	username: z.preprocess((val) => (val === "" ? undefined : val), z.string()),
-	password: z.preprocess((val) => (val === "" ? undefined : val), z.string()),
+	username: z.preprocess(emptyString, z.string()),
+	password: z.preprocess(emptyString, z.string()),
 });
