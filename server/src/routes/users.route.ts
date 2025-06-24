@@ -204,7 +204,7 @@ userRouter.post("/", zValidator("form", zUsers), async (c) => {
 		// best to use switch case here if it gottten big
 		if (e.errno == 2067) {
 			c.status(409);
-			return c.json({ message: "Email already exist." });
+			return c.json({ message: "Email already exists." });
 		}
 	}
 });
