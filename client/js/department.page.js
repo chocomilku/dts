@@ -1,7 +1,16 @@
-/**@import {User, UsersResponse, Department} from "./constants.js" */
+/**@import {User, UsersResponse, Department, DepartmentsResponse} from "./constants.js" */
 import { API_URL, dbDateTransformer } from "./constants.js";
-import { getDepartmentData } from "./fetchHelpers.js";
+import { getDepartmentData, getUserData } from "./fetchHelpers.js";
 import { statusRedirect } from "./statusRedirect.js";
+
+/**
+ * Current logged-in user data cache
+ * @type {User|null}
+ */
+let currentUser = null;
+
+// Reference to Bootstrap Modal object
+let userModal = null;
 
 /**
  * Gets the department number from the URL
@@ -90,6 +99,7 @@ function createStaffThreadItem(user) {
                 <div><b>Role</b> <span>${user.role ?? "Unknown"}</span></div>
                 <div><b>Created At</b> <span>${user.createdAt ? dbDateTransformer(user.createdAt).toLocaleString() : "Unknown"}</span></div>
                 ${user.username ? `<div><b>Username</b> <span>${user.username}</span></div>` : ""}
+                ${user.email ? `<div><b>Email</b> <span>${user.email}</span></div>` : ""}
             </div>
         </div>
     `;
@@ -179,18 +189,280 @@ function renderStaff(members) {
  * Main function to load and render page data
  */
 async function loadPageData() {
-    const data = await fetchDepartmentData();
-    if (data && data.department && data.members) {
-        renderDepartmentDetails(data.department);
-        renderStaff(data.members.data);
-    } else {
-        // Handle error case, maybe show an error message on the page
+    try {
+        // Get current user for permission checks
+        if (!currentUser) {
+            currentUser = await getUserData("@me");
+        }
+
+        const data = await fetchDepartmentData();
+        if (data && data.department && data.members) {
+            renderDepartmentDetails(data.department);
+            renderStaff(data.members.data);
+
+            // Setup modal and form handlers
+            setupNewUserModal();
+            handleNewUserForm();
+        } else {
+            // Handle error case, maybe show an error message on the page
+            const mainContent = document.getElementById("departmentPage");
+            if (mainContent) {
+                mainContent.innerHTML = `<div class="alert alert-danger">Could not load department data.</div>`;
+            }
+        }
+    } catch (error) {
+        console.error("Error loading page data:", error);
         const mainContent = document.getElementById("departmentPage");
         if (mainContent) {
-            mainContent.innerHTML = `<div class="alert alert-danger">Could not load department data.</div>`;
+            mainContent.innerHTML = `<div class="alert alert-danger">An error occurred while loading the page.</div>`;
         }
     }
 }
 
 document.addEventListener("DOMContentLoaded", loadPageData);
+
+/**
+ * Gets an element by ID with type checking
+ * @template {HTMLElement} T
+ * @param {string} id - Element ID
+ * @param {new() => T} [type] - Element type constructor
+ * @returns {T|null}
+ */
+function getElement(id, type) {
+    const element = document.getElementById(id);
+    if (!element) return null;
+    if (type && !(element instanceof type)) return null;
+    return /** @type {T} */(element);
+}
+
+/**
+ * Sets up the new user modal based on current user's permissions
+ * @returns {Promise<void>}
+ */
+async function setupNewUserModal() {
+    try {
+        // Get current user if not already cached
+        if (!currentUser) {
+            currentUser = await getUserData("@me");
+        }
+
+        if (!currentUser) {
+            console.error("Failed to get user data");
+            return;
+        }
+
+        const addUserButton = getElement("addUserButton", HTMLButtonElement);
+        const userDeptSelect = getElement("user-department", HTMLSelectElement);
+        const departmentId = getDepartmentNumberFromUrl();
+
+        if (!userDeptSelect || !addUserButton) {
+            console.error("Required UI elements not found");
+            return;
+        }
+
+        // Only show button for superadmin or admin
+        const isAdmin = (currentUser.role === "superadmin") || (currentUser.role === "admin" && currentUser.department?.id === Number(departmentId));
+        addUserButton.style.display = isAdmin ? "block" : "none";
+
+        if (!isAdmin) return;
+
+        // Populate department dropdown based on role
+        try {
+            if (currentUser.role === "superadmin") {
+                // Fetch all departments for superadmin
+                const res = await fetch(`${API_URL}/api/departments`, {
+                    credentials: "include"
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch departments: ${res.status}`);
+                }
+
+                /** @type {DepartmentsResponse} */
+                const data = await res.json();
+
+                // Clear and repopulate dropdown
+                userDeptSelect.innerHTML = `<option value="">Select Department</option>`;
+
+                if (Array.isArray(data.data)) {
+                    data.data.forEach(dept => {
+                        const option = document.createElement("option");
+                        option.value = dept.id.toString();
+                        option.textContent = dept.name;
+                        // Pre-select the current department
+                        if (dept.id.toString() === departmentId) {
+                            option.selected = true;
+                        }
+                        userDeptSelect.appendChild(option);
+                    });
+                }
+
+                userDeptSelect.disabled = false;
+            } else if (currentUser.role === "admin") {
+                // For regular admin, only show the current department and disable selection
+                const department = await getDepartmentData(parseInt(departmentId));
+
+                userDeptSelect.innerHTML = "";
+                const option = document.createElement("option");
+                option.value = departmentId;
+                option.textContent = department?.name || "Current Department";
+                option.selected = true;
+                userDeptSelect.appendChild(option);
+                userDeptSelect.disabled = true;
+            }
+        } catch (error) {
+            console.error("Error loading departments:", error);
+            userDeptSelect.innerHTML = `<option value="">Error loading departments</option>`;
+        }
+    } catch (error) {
+        console.error("Error setting up user modal:", error);
+    }
+}
+
+/**
+ * Shows form validation errors
+ * @param {Array<HTMLElement|null>} fields - Form fields to mark as invalid
+ * @param {string} [message] - Optional error message to display
+ */
+function showFormErrors(fields, message) {
+    fields.forEach(field => {
+        if (field) {
+            field.classList.add("is-invalid");
+
+            // Find corresponding feedback element if exists
+            if (message && field.id) {
+                const feedback = document.getElementById(`${field.id}-feedback`);
+                if (feedback) {
+                    feedback.className = "invalid-feedback d-block";
+                    feedback.textContent = message;
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Clears form validation errors
+ * @param {Array<HTMLElement|null>} fields - Form fields to clear
+ */
+function clearFormErrors(fields) {
+    fields.forEach(field => {
+        if (field) {
+            field.classList.remove("is-invalid");
+
+            // Clear feedback element if exists
+            if (field.id) {
+                const feedback = document.getElementById(`${field.id}-feedback`);
+                if (feedback) {
+                    feedback.className = "";
+                    feedback.textContent = "";
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Updates submit button state during form submission
+ * @param {HTMLButtonElement|null} button - The submit button
+ * @param {boolean} isLoading - Whether the button should show loading state
+ */
+function updateSubmitButton(button, isLoading) {
+    if (!button) return;
+
+    button.disabled = isLoading;
+    button.innerHTML = isLoading
+        ? `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...`
+        : `Create`;
+}
+
+/**
+ * Sets up the new user form submission handler
+ */
+function handleNewUserForm() {
+    const form = getElement("new-user-form", HTMLFormElement);
+    if (!form) return;
+
+    // Set up the modal reference
+    const modalElement = document.getElementById('newUserModal');
+    if (modalElement) {
+        // @ts-ignore - Bootstrap is loaded globally
+        userModal = new bootstrap.Modal(modalElement);
+    }
+
+    const nameField = getElement("user-name", HTMLInputElement);
+    const roleField = getElement("user-role", HTMLSelectElement);
+    const deptField = getElement("user-department", HTMLSelectElement);
+    const emailField = getElement("user-email", HTMLInputElement);
+    const passwordField = getElement("user-password", HTMLInputElement);
+    const submitBtn = getElement("user-form-submit", HTMLButtonElement);
+
+    // Check if all required form elements are present
+    if (!nameField || !roleField || !deptField || !emailField || !passwordField || !submitBtn) {
+        console.error("Form fields not found");
+        return;
+    }
+
+    const formFields = [nameField, roleField, deptField, emailField, passwordField];
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        // Basic validation
+        if (!form.checkValidity()) {
+            event.stopPropagation();
+            showFormErrors(formFields);
+            return;
+        }
+
+        clearFormErrors(formFields);
+        updateSubmitButton(submitBtn, true);
+
+        try {
+            const body = new URLSearchParams({
+                name: nameField.value,
+                role: roleField.value,
+                departmentId: deptField.value,
+                email: emailField.value,
+                password: passwordField.value
+            });
+
+            const res = await fetch(`${API_URL}/api/users`, {
+                method: "POST",
+                body,
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showFormErrors(formFields, data.message || "Error creating user");
+                updateSubmitButton(submitBtn, false);
+            } else {
+                // Success
+                clearFormErrors(formFields);
+                form.reset();
+
+                // Close the modal and refresh the page to show the new user
+                if (userModal) {
+                    userModal.hide();
+                }
+
+                // Reload staff data
+                setTimeout(() => {
+                    loadPageData();
+                }, 500);
+
+                updateSubmitButton(submitBtn, false);
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            showFormErrors(formFields, "Network or server error occurred");
+            updateSubmitButton(submitBtn, false);
+        }
+    });
+}
 

@@ -170,44 +170,59 @@ userRouter.get("/:id", sessionAuth("any"), async (c) => {
 //#endregion
 
 //#region users - POST
-userRouter.post("/", zValidator("form", zUsers), async (c) => {
-	const validated = c.req.valid("form");
+userRouter.post(
+	"/",
+	zValidator("form", zUsers),
+	sessionAuth(["admin", "superadmin"]),
+	async (c) => {
+		const validated = c.req.valid("form");
+		const user = c.get("user");
 
-	const passwordHash = await Bun.password.hash(validated.password);
-
-	try {
-		const insertedId = await db
-			.insert(usersModel)
-			.values({
-				role: validated.role,
-				name: validated.name,
-				departmentId: validated.departmentId,
-				email: validated.email,
-				username: await usernameProvider(),
-				password: passwordHash,
-			})
-			.returning({ id: usersModel.id, username: usersModel.username });
-
-		c.status(201);
-		return c.json({
-			message: "User Successfully Added!",
-			insertedData: insertedId,
-		});
-	} catch (e) {
-		if (!(e instanceof SQLiteError)) {
-			console.error(e);
-			c.status(500);
-			return c.json({ message: "Internal Server Error" });
+		if (user.role == "admin") {
+			if (validated.departmentId != user.departmentId) {
+				c.status(403);
+				return c.json({
+					message: "Admins can only create users in their department.",
+				});
+			}
 		}
 
-		// SQLITE_CONSTRAINT_UNIQUE
-		// best to use switch case here if it gottten big
-		if (e.errno == 2067) {
-			c.status(409);
-			return c.json({ message: "Email already exists." });
+		const passwordHash = await Bun.password.hash(validated.password);
+
+		try {
+			const insertedId = await db
+				.insert(usersModel)
+				.values({
+					role: validated.role,
+					name: validated.name,
+					departmentId: validated.departmentId,
+					email: validated.email,
+					username: await usernameProvider(),
+					password: passwordHash,
+				})
+				.returning({ id: usersModel.id, username: usersModel.username });
+
+			c.status(201);
+			return c.json({
+				message: "User Successfully Added!",
+				insertedData: insertedId,
+			});
+		} catch (e) {
+			if (!(e instanceof SQLiteError)) {
+				console.error(e);
+				c.status(500);
+				return c.json({ message: "Internal Server Error" });
+			}
+
+			// SQLITE_CONSTRAINT_UNIQUE
+			// best to use switch case here if it gottten big
+			if (e.errno == 2067) {
+				c.status(409);
+				return c.json({ message: "Email already exists." });
+			}
 		}
 	}
-});
+);
 //#endregion
 
 //#region user - PUT

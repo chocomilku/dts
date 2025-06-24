@@ -25,8 +25,8 @@ export const zUsers = z.object({
 	role: z.enum(["superadmin", "admin", "clerk", "officer"]),
 	name: z.preprocess(emptyString, z.string()),
 	departmentId: z.coerce.number(),
-	email: z.email().optional(),
-	password: z.string(),
+	email: z.preprocess(emptyString, z.email().optional()),
+	password: z.preprocess(emptyString, z.string()),
 });
 
 export const zLogin = z.object({

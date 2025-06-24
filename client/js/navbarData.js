@@ -5,6 +5,7 @@ const loadUserData = async () => {
         const user = await getUserData("@me");
         const nameElem = document.getElementsByClassName('profile__name')
         const deptElem = document.getElementsByClassName('profile__dept')
+        const staffNav = document.getElementById('staffNav');
 
         if (nameElem) {
             for (let i = 0; i < nameElem.length; i++) {
@@ -18,11 +19,16 @@ const loadUserData = async () => {
                 let content = "No Department";
                 if (user.department) {
                     content = `${user.department.name} (${user.role})`
+
+
                 }
 
                 deptElem[i].textContent = content;
             }
         }
+
+        if (!(staffNav instanceof HTMLAnchorElement)) return;
+        staffNav.href = `/departments/${user.department?.id}#staff`
 
     } catch (e) {
         console.error(e);

@@ -62,7 +62,7 @@
                         <span class="material-symbols-outlined">supervisor_account</span>
                         <span class="fw-semibold">Departments</span>
                     </a>
-                    <a href="/staff" class="navigation__item" onclick="closeSidebarIfMobile()">
+                    <a href="#" id="staffNav" class="navigation__item" onclick="closeSidebarIfMobile()">
                         <span class="material-symbols-outlined">groups</span>
                         <span class="fw-semibold">Staff Members</span>
                     </a>
@@ -91,8 +91,14 @@
                     </p>
                 </div>
 
-                <div class="main-content">
-                    <h2><b>Staff Members</b></h2>
+                <div class="main-content" id="staff">
+                    <div class="d-flex flex-row gap-2 align-items-center">
+                        <h2><b>Staff Members</b></h2>
+                        <button class="btn btn-sm btn-primary material-symbols-outlined" data-bs-toggle="modal"
+                            data-bs-target="#newUserModal" id="addUserButton" style="display:none;">
+                            add
+                        </button>
+                    </div>
                     <div class="accordion" id="staffRoles">
                         <span class="spinner-border text-dark" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -100,6 +106,60 @@
                     </div>
                 </div>
             </main>
+
+            <!-- New Staff Member Modal -->
+            <div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="newUserModalLabel">New Staff Member</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="new-user-form" novalidate>
+                            <div class="modal-body">
+                                <div>
+                                    <label for="user-name" class="form-label required">Name</label>
+                                    <input type="text" name="name" id="user-name" class="form-control" required>
+                                    <div id="user-name-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-role" class="form-label required">Role</label>
+                                    <select name="role" id="user-role" class="form-select" required>
+                                        <option value="clerk">Clerk</option>
+                                        <option value="officer">Officer</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="superadmin">Super Admin</option>
+                                    </select>
+                                    <div id="user-role-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-department" class="form-label required">Department</label>
+                                    <select name="departmentId" id="user-department" class="form-select" required>
+                                        <option value="">Loading...</option>
+                                    </select>
+                                    <div id="user-department-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-email" class="form-label">Email</label>
+                                    <input type="email" name="email" id="user-email" class="form-control">
+                                    <div id="user-email-feedback"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="user-password" class="form-label required">Password</label>
+                                    <input type="password" name="password" id="user-password" class="form-control"
+                                        required>
+                                    <div id="user-password-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success" id="user-form-submit">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
