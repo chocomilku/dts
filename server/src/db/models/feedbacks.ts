@@ -1,6 +1,8 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, int, text } from "drizzle-orm/sqlite-core";
 import { users } from "./users";
+import { z } from "zod";
+import { emptyString } from "@utils/emptyString";
 
 export const feedbacks = sqliteTable("feedbacks", {
 	id: int().primaryKey({ autoIncrement: true }),
@@ -12,3 +14,10 @@ export const feedbacks = sqliteTable("feedbacks", {
 });
 
 export type Feedback = typeof feedbacks.$inferSelect;
+
+export const zFeedback = z.object({
+	feedback: z.preprocess(
+		emptyString,
+		z.string().min(1, "Feedback cannot be empty").max(1000, "Feedback too long")
+	),
+});
